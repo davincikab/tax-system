@@ -11,3 +11,17 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+:root {
+  --actionBoardBackground: #2B323B;
+  --actionBoardBackground2: #25272F;
+  --sectionBackground: #3C4551;
+  --purple: #A756D2;
+  --yellow: #D2C456;
+  --green: #6ED256;
+  --blue: #25C9BC;
+  --red: #CC6A6A;
+  --grey-blue: #ADC4D0;
+  --white:#fff;
+  --grey:#c2c2c2;
+}
