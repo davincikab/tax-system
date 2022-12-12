@@ -9,10 +9,7 @@ import {
   Legend,
 } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
-// import faker;
 import { getNumbers } from '../../utils/faker/faker';
-// import { faker } from "https://cdn.skypack.dev/@faker-js/faker@v7.4.0"
-
 
 
 ChartJS.register(
