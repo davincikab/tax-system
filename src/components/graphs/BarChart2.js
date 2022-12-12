@@ -9,8 +9,7 @@ import {
   Legend,
 } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
-// import faker from 'faker';
-import { faker } from "https://cdn.skypack.dev/@faker-js/faker@v7.4.0"
+import { getNumbers } from '../../utils/faker/faker';
 
 
 
@@ -50,7 +49,7 @@ export const data = {
   datasets: [
     {
       label: 'Dataset 1',
-      data: labels.map(() => faker.datatype.number({ min: 10, max: 100 })),
+      data:getNumbers(labels.length,  10, 100 ),
       borderColor: '#fff',
       borderWidth:0.1,
       backgroundColor: ['#D2C456', '#A89D5C', '#D2C456', '#A89D5C','#D2C456', '#A89D5C', '#D2C456' ],
