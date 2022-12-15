@@ -110,7 +110,7 @@ const MapContainer = (props) => {
 
   // mouse events
   const onMouseEnter = (evt) => {
-    console.log(evt);
+    console.log("Mouse Enter Event");
     let {features, lngLat } = evt;
 
     if(features[0] && features[0].layer.id === "districts-data") {
@@ -121,7 +121,9 @@ const MapContainer = (props) => {
 
       let feature = {...features[0]};
       let summaryInfo = JSON.parse(feature.properties.summaryInfo);
-      let coords = summaryInfo.Location ? summaryInfo.Location.split(",").reverse() : [lngLat.lng, lngLat.lat];
+      // summaryInfo.Location ? summaryInfo.Location.split(",").reverse() :
+
+      let coords =  [lngLat.lng, lngLat.lat];
 
       summaryInfo.latitude = coords[1];
       summaryInfo.longitude = coords[0]; 
@@ -132,20 +134,33 @@ const MapContainer = (props) => {
         ...state,
         popupInfo:summaryInfo,
         cursor:'pointer'
-      })
+      });
+      
     } else {
-      setCursor('pointer');
+
+      // let props = features[0].properties;
+      // let coords = Object.values(evt.lngLat);
+
+      // let info = {...props, latitude:coords[1], longitude:coords[0]}
+      // console.log(info);
+      
+      // setState({
+      //   ...state,
+      //   buildingInfo:{...info},
+      //   cursor:'pointer'
+      // });
+      // setCursor('pointer');
     }
 
     
   }
 
   const onMouseLeave = (evt) => {
-    setState({
-      ...state,
-      // popupInfo:null,
-      cursor:'auto'
-    });
+    // setState({
+    //   ...state,
+    //   // popupInfo:null,
+    //   cursor:'auto'
+    // });
     
   }
 
@@ -161,6 +176,7 @@ const MapContainer = (props) => {
       if(state.activeDistrict === features[0].properties.Name) {
         
       } else {
+        console.log("District Info")
         updateDistrictBuilding(features[0].properties.Name);
       }     
       // props.selectDistrict(features[0].properties.Name);      
@@ -168,19 +184,17 @@ const MapContainer = (props) => {
     
     if(features[0] && features[0].layer.id === 'districts-buildings') {
       console.log("Rendering District Popup");
-      // 
-      // updateDistrictBuilding(features[0].properties.Name);
-      // props.selectDistrict(features[0].properties.Name); 
       
       let props = features[0].properties;
-      let coords = features[0].geometry.coordinates;
+      let coords = Object.values(evt.lngLat);
 
       let info = {...props, latitude:coords[1], longitude:coords[0]}
       console.log(info);
       
       setState({
         ...state,
-        buildingInfo:{...info}
+        buildingInfo:{...info},
+        cursor:'pointer'
       });
 
     }
@@ -190,13 +204,12 @@ const MapContainer = (props) => {
   }
 
   const updateDistrictBuilding = (district) => {
-    console.log(district);
-    console.log(state.rental_data);
-
     let activeDistricts = state.rental_data.filter(building => building["District Name"] === district);
     console.log(activeDistricts);
 
     // props.selectDistrict(district);
+
+    console.log("Updating District:", district);
 
     setState({
       ...state,
@@ -268,6 +281,8 @@ const MapContainer = (props) => {
                 longitude={Number(popupInfo.longitude)}
                 latitude={Number(popupInfo.latitude)}
                 onClose={() => setPopupInfo(null)}
+                focusAfterOpen={false}
+                closeOnClick={false}
               >
                 <div className='popup-content'>
                   <div className='popup-header'>
@@ -301,6 +316,7 @@ const MapContainer = (props) => {
                 anchor="top"
                 longitude={Number(buildingInfo.longitude)}
                 latitude={Number(buildingInfo.latitude)}
+
                 onClose={() => setPopupInfo(null)}
               >
                 <div className='popup-content'>
@@ -355,6 +371,13 @@ export const dataLayer = (district) => {
   return {
     id: "districts-data",
     type: 'fill',
+    filter:[
+      'match',
+      ['get', 'Name'],
+      `${district}`, 
+      false,
+      true
+    ],
     paint: {
       'fill-color': {
         property: 'id',
@@ -379,6 +402,7 @@ export const dataLayer = (district) => {
       ],
       'fill-outline-color':'white'
     }
+
   };
 }
 
