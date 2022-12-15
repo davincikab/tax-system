@@ -26,6 +26,7 @@ const Dashboard = (props) => {
     }
 
     let { activeTab } = state;
+    let date = new Date();
     
     return (
         <div className="dashboard-card">
@@ -37,7 +38,7 @@ const Dashboard = (props) => {
                     </div>
 
                     <div className="date">
-                        20 October 2022
+                        {date.toDateString()}
                     </div>
                 </div>
                 
@@ -81,11 +82,15 @@ const Dashboard = (props) => {
 
 // respective card
 const TaxCollectionCard = (props) => {
+    let date = new Date();
+    let localeString = date.toLocaleDateString();
+    localeString = localeString.replace(/\//g, ".");
+
     return (
         <div className='section'>
 
             <div className='section-title'>
-                Updated Data <span>20. 10. 2022 13.22.05PM</span>
+                Updated Data <span>{localeString} {date.toLocaleTimeString()}</span>
             </div>
 
             <div className='section-body'>

@@ -4,8 +4,9 @@ import logo from '../../logo.svg';
 const Footer = () => {
     return (
         <div className="footer-section">
+
             <div className="card-icon">
-            <img src="/assets/icons/logo.png" alt="logo" />
+                <img src="/assets/icons/logo.png" alt="logo" />
                 <div>Activity Board</div>
             </div>
 
@@ -26,6 +27,7 @@ const Footer = () => {
                     </div>
                 </div>
             </div>
+            
         </div>
     )
 }

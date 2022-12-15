@@ -1,5 +1,4 @@
 import { FaSearch, FaCheckSquare, FaDatabase, FaHouseUser, FaCog } from 'react-icons/fa';
-
 import logo from '../../logo.svg';
 
 const ToolKitCard = (props) => {
@@ -11,7 +10,7 @@ const ToolKitCard = (props) => {
         return tab === props.activeTab ? 'card-item active' : 'card-item';
     }
 
-    console.log(props.activeTab);
+    // console.log(props.activeTab);
     return (
         <div className="card tools-card">
             

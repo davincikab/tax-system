@@ -27,8 +27,6 @@ function getNumbers(count, min, max) {
         arr.push(number);
     }
 
-    console.log(arr);
-
     return arr;
 }
 

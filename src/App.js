@@ -7,13 +7,19 @@ import SearchCard from './components/cards/SearchCard';
 import SearchResultCard from './components/cards/SearchResultsCard';
 import Dashboard from './components/dashboard/dashboard';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import TaskSection from './components/task/TaskSection';
+import SummarySection from './components/summary/summary';
+import SummaryToggler from './components/summary/summary-toggler';
+import ReportSection from './components/reports/reports';
 
 
 function App() {
+
   const [ state, setState ] = useState({
-    activeTab:'search'
+    activeTab:'search', 
+    summaryActive:false,
+    district:""
   });
 
   const toggleTab = (tab) => {
@@ -25,10 +31,34 @@ function App() {
 
   }
 
-  let { activeTab } = state;
+  const toggleSummaryTab = () => {
+
+    setState({
+      ...state,
+      summaryActive:!state.summaryActive
+    });
+
+  }
+
+  const selectDistrict = (district) => {
+
+    setState({
+      ...state,
+      summaryActive:false,
+      district
+    });
+
+  }
+
+  let { activeTab, summaryActive, district } = state;
+  // console.log(district);
+
   return (
     <div className="App">
-      <MapContainer />
+      <MapContainer 
+        activeDistrict={district}
+        selectDistrict={selectDistrict}
+      />
       <SearchCard />
 
       <SearchResultCard 
@@ -42,7 +72,11 @@ function App() {
         activeTab={state.activeTab}
       />
 
-      {activeTab === "task" && <TaskSection /> }
+      { activeTab === "task" && <TaskSection /> }
+      { summaryActive && <SummarySection toggleSummaryTab={toggleSummaryTab} selectDistrict={selectDistrict} /> }
+
+      {activeTab === "settings" && <ReportSection />}
+      <SummaryToggler toggleSummaryTab={toggleSummaryTab}/>
 
       <Footer />
     </div>
