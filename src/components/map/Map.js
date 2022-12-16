@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import Map, { Source, Layer, NavigationControl, Popup } from 'react-map-gl';
+import Map, { Source, Layer, NavigationControl, Popup, Marker } from 'react-map-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import * as turf from '@turf/turf';
+import Pin from './icon';
 
 // import { read, utils } from "xlsx";
 import {read, utils} from "xlsx";
@@ -22,6 +23,7 @@ const MapContainer = (props) => {
     buildingInfo:null,
     isUnitOpen:false,
     tax_assessment:null,
+    markerPopupInfo:null,
     licenses:null,
     expired_license:null
   });
@@ -64,7 +66,7 @@ const MapContainer = (props) => {
 
       geoData.features = geoData.features.map(ft => {
         let entry = rental_data.find(dt => dt['District Name'] === ft.properties.Name);
-        ft.properties.summaryInfo = {...entry} || {'District Name':ft.properties.Name};
+        ft.properties.summaryInfo = entry ? {...entry} : {'District Name':ft.properties.Name};
         
         return ft;
       });
@@ -127,7 +129,7 @@ const MapContainer = (props) => {
 
       let feature = geoData.features.filter(ft => ft.properties.Name === name);
       console.log(feature);
-      
+
       var bbox = turf.bbox(turf.featureCollection([...feature]));
 
       // console.log(bbprops
@@ -146,7 +148,13 @@ const MapContainer = (props) => {
       popupInfo:info,
       buildingInfo:info
     });
+  }
 
+  const setMarkerPopupInfo = (feature) => {
+    setState({
+      ...state,
+      markerPopupInfo:feature
+    });
 
   }
 
@@ -196,29 +204,17 @@ const MapContainer = (props) => {
 
     } else {
 
-      // let props = features[0].properties;
-      // let coords = Object.values(evt.lngLat);
-
-      // let info = {...props, latitude:coords[1], longitude:coords[0]}
-      // console.log(info);
-      
-      // setState({
-      //   ...state,
-      //   buildingInfo:{...info},
-      //   cursor:'pointer'
-      // });
-      // setCursor('pointer');
     }
 
     
   }
 
   const onMouseLeave = (evt) => {
-    // setState({
-    //   ...state,
-    //   // popupInfo:null,
-    //   cursor:'auto'
-    // });
+    setState({
+      ...state,
+      popupInfo:null,
+      cursor:'auto'
+    });
     
   }
 
@@ -294,7 +290,7 @@ const MapContainer = (props) => {
   }
 
 
-  let { district_buildings, activeDistrict, cursor, popupInfo, buildingInfo, expired_license } = state;
+  let { district_buildings, activeDistrict, cursor, popupInfo, buildingInfo, expired_license, markerPopupInfo } = state;
   let building_json = getBuildingGeoJSON(district_buildings);
 
 
@@ -455,17 +451,21 @@ const MapContainer = (props) => {
 
           {/* render the data relating to the given district */}
           {
-            licensesGeo &&
-            <Source type="geojson" data={licensesGeo} id="licenses">
-                <Layer {...licenseStyle()} />
-            </Source>
+            (activeDistrict && licensesGeo) && <Pins data={licensesGeo} setMarkerPopupInfo={setMarkerPopupInfo} color="orange" layer="license"/>
+            // <Source type="geojson" data={licensesGeo} id="licenses">
+            //     <Layer {...licenseStyle()} />
+            // </Source>
           }
 
           {
-            taxGeo &&
-            <Source type="geojson" data={taxGeo} id="tax-assessment">
-                <Layer {...taxStyle()} />
-            </Source>
+            (activeDistrict && taxGeo) && <Pins data={taxGeo} setMarkerPopupInfo={setMarkerPopupInfo} color="blue" layer="tax"/>
+            // <Source type="geojson" data={taxGeo} id="tax-assessment">
+            //     <Layer {...taxStyle()} />
+            // </Source>
+          }
+
+          {
+            markerPopupInfo && <MarkerPopup info={markerPopupInfo} setMarkerPopupInfo={setMarkerPopupInfo}/>
           }
 
 
@@ -474,6 +474,63 @@ const MapContainer = (props) => {
         </Map>
     </>
     )
+}
+
+const Pins  = ({data, setMarkerPopupInfo, color, layer}) => {
+  console.log(data);
+
+  return (
+    data.features.map((entry, index) => (
+      <Marker
+        key={`marker-${index}`}
+        longitude={entry.geometry.coordinates[0]}
+        latitude={entry.geometry.coordinates[1]}
+        anchor="center"
+        onClick={e => {
+          // If we let the click event propagates to the map, it will immediately close the popup
+          // with `closeOnClick: true`
+          e.originalEvent.stopPropagation();
+          setMarkerPopupInfo(entry);
+        }}
+      >
+        <Pin color={color} />
+      </Marker>
+    ))
+  )
+
+}
+
+const MarkerPopup = ({info, setMarkerPopupInfo}) => {
+  let coords = info.geometry.coordinates;
+  
+  const renderContent = (info) => {
+    let keys = Object.keys(info.properties).filter(key => ['Location', 'coords'].indexOf(key) === -1);
+
+    return (
+      <div className=''>
+          {keys.map((columnName, i) => (
+            <div key={`column-${i}`} className="d-flex popup-item">
+              <div className='item-label'>{columnName}</div>
+              <div className='item-value'>{info.properties[columnName]}</div>
+            </div>
+          ))}
+      </div>
+    )
+    
+  }
+
+  return (
+    <Popup
+      anchor="top"
+      longitude={Number(coords[0])}
+      latitude={Number(coords[1])}
+      focusAfterOpen={false}
+      closeOnClick={false}
+      onClose={() => setMarkerPopupInfo(null)}
+    >
+      { renderContent(info)}
+    </Popup>
+  )
 }
 
 const UnitDetailSection = (props) => {
