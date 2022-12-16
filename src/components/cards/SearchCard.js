@@ -3,6 +3,7 @@
 const SearchCard = (props) => {
     const handleChange = (evt) => {
         console.log(evt.target.value);
+        props.handleSearchChange(evt.target.value)
     }
 
     return (

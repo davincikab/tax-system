@@ -162,7 +162,7 @@ div#map-container {
   padding:10px;
   z-index: 2;
   background-color: var(--white);
-  width: 250px;
+  width: 260px;
   font-size: 12px;
   max-height: 80vh;
   overflow-y: auto;
@@ -213,7 +213,7 @@ div#map-container {
 
 .card-header .card-text {
   background-color: var(--sectionBackground);
-  font-size: 15px;
+  /* font-size: 15px; */
 }
 
 .card-header .status {
@@ -531,7 +531,7 @@ form .btn-submit {
 }
 
 .popup-content, .mapboxgl-popup-content{
-  width: 380px;
+  max-width: 100%;
   font-size: 13px; 
 }
 
@@ -540,6 +540,8 @@ form .btn-submit {
   color:var(--white);
   font-size: 14px;
   background: #5b5b5be1 !important;
+  max-height: 65vh;
+  overflow-y: auto;
   /* background: #ffffffb1; */
 }
 
@@ -548,7 +550,8 @@ form .btn-submit {
 }
 
 .mapboxgl-popup {
-  max-width: 380px !important;
+  min-width: 250px;
+  max-width: 420px !important;
 }
 
 .mapboxgl-popup-content .mapboxgl-popup-close-button {
@@ -570,6 +573,14 @@ form .btn-submit {
 table td, th {
   text-align: left;
   padding:0 0.25rem;
+}
+
+thead th {
+  font-size: 12px;
+}
+
+tr td {
+  font-size: 12px;
 }
 
 .popup-header {

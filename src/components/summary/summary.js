@@ -44,10 +44,15 @@ const SummaryCard = (props) => {
         props.handleCardClick(district)
     }
 
+    let colors = ['#6ED256', '#CC6A6A', '#D2C456','#CC6A6A', '#D2C456'];
+    let index = Math.round(Math.random() * 5);
+
+    let color = colors[index];
+
     return (
         <div className="summary-card" onClick={() => handleClick(props.district)}>
             <div className="text-card">
-                <div className="color-div"></div>
+                <div className="color-div" style={{ backgroundColor:color}}></div>
                 <div className="card-text">
                     <div>{props.district}</div>
                 </div>

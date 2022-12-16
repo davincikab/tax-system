@@ -1,4 +1,6 @@
 const SearchResultCard = (props) => {
+    console.log(props.entries);
+
     return (
         <div className="search-result">
             <div className="search-header">
@@ -7,8 +9,8 @@ const SearchResultCard = (props) => {
 
             <div className="search-body">
                 {
-                [0, 1].map(result => (
-                    <ResultCard key={result} />
+                props.entries.map((entry, i) => (
+                    <ResultCard key={`result-${i}`} entry={entry} />
                 ))
                 }
             </div>
@@ -16,7 +18,7 @@ const SearchResultCard = (props) => {
     )   
 }
 
-const ResultCard = (props) => {
+const ResultCard = ({entry}) => {
     return (
         <div className="result-card">
 
@@ -25,13 +27,15 @@ const ResultCard = (props) => {
                 <div className="color-div"></div>
                 <div className="card-text">
                     <div className="label">Account #  :</div>
-                    <b>00001</b>
+                    <b>{entry['Account Number']}</b>
                 </div>
             </div>
 
             <div className="status d-flex">
-                <img src="/assets/icons/correct.png" alt="paid"/>
-                <span>Paid</span>
+                { (entry['Status'] === 'Paid') && <img src="/assets/icons/correct.png" alt="paid"/> }
+                { (entry['Status'] === 'Unpaid') && <img src="/assets/icons/close.png" alt="Unpaid"/> }
+                
+                <span>{entry['Status']}</span>
             </div>
         </div>
 
@@ -60,7 +64,7 @@ const ResultCard = (props) => {
                 <div>
                     <div>Amount : </div>
                     <div className="b">
-                        RM 638.00
+                        RM {formatValues(entry['Amount'])}
                     </div>
                 </div>
 
@@ -69,6 +73,10 @@ const ResultCard = (props) => {
         </div>
         </div>
     )
+}
+
+function formatValues(value = 0) {
+    return value.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');  
 }
 
 export default SearchResultCard;

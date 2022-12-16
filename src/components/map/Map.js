@@ -25,6 +25,7 @@ const MapContainer = (props) => {
     tax_assessment:null,
     markerPopupInfo:null,
     licenses:null,
+    tax_summary:null,
     expired_license:null
   });
 
@@ -39,9 +40,9 @@ const MapContainer = (props) => {
       readRentalData();
     }
 
-    console.log(prevProp);
+    // console.log(prevProp);
     if(prevProp && prevProp.district !== props.activeDistrict) {
-      console.log("Props changed");
+      // console.log("Props changed");
         setState({
           ...state,
           buildingInfo:null,
@@ -61,8 +62,8 @@ const MapContainer = (props) => {
       let workbook = read(data);
       let rental_data = utils.sheet_to_json(workbook.Sheets['Rent Place']);
 
-      // console.log(geoData);
-      // console.log(rental_data);
+      // // console.log(geoData);
+      // // console.log(rental_data);
 
       geoData.features = geoData.features.map(ft => {
         let entry = rental_data.find(dt => dt['District Name'] === ft.properties.Name);
@@ -75,25 +76,31 @@ const MapContainer = (props) => {
       .then(res => res.arrayBuffer())
       .then(data => {
         let businessWorkbook = read(data);
-        let currentDistrict = "";
+        let currentDistrict, currentRevenue = "";
 
         let licenses = utils.sheet_to_json(businessWorkbook.Sheets['License']).map(lic => {
           if(lic['District Name']) {
-            currentDistrict = lic['District Name']
+            currentDistrict = lic['District Name'];
+            currentRevenue = lic['Total Revenue'];
+
           } else {
+
             lic['District Name'] = currentDistrict;
+            lic['Total Revenue'] = currentRevenue;
+
           }
 
           return lic;
         });
 
-        console.log(licenses);
+        // console.log(licenses);
 
         // utils.sheet_to_
         setState({
           ...state,
           tax_assessment:utils.sheet_to_json(businessWorkbook.Sheets['Tax Assessment']),
           expired_license:utils.sheet_to_json(businessWorkbook.Sheets["ExpiredLicense Account Details "]),
+          tax_summary:utils.sheet_to_json(businessWorkbook.Sheets['Tax']),
           licenses:[...licenses],
           rental_data:JSON.parse(JSON.stringify(rental_data))
         });
@@ -118,7 +125,7 @@ const MapContainer = (props) => {
 
   // load map data
   const handleMapLoad = (evt) => {
-    console.log("Map load event");
+    // console.log("Map load event");
   }
 
   // fit feature
@@ -128,13 +135,13 @@ const MapContainer = (props) => {
       let name = state.activeDistrict || props.activeDistrict;
 
       let feature = geoData.features.filter(ft => ft.properties.Name === name);
-      console.log(feature);
+      // console.log(feature);
 
       var bbox = turf.bbox(turf.featureCollection([...feature]));
 
-      // console.log(bbprops
+      // // console.log(bbprops
       mapRef.current.fitBounds(bbox, { padding:100 });
-      // console.log(mapRef.current);
+      // // console.log(mapRef.current);
       // mapRef.current.setPaintProperty("districts-data", "fill-opacity", 0.2);
 
     }
@@ -170,15 +177,15 @@ const MapContainer = (props) => {
   // mouse events
   const onMouseEnter = (evt) => {
     let {features, lngLat } = evt;
-    console.log(features);
+    // console.log(features);
 
     if(features[0] && features[0].layer.id === "districts-data") {
       if(state.activeDistrict === features[0].properties.Name) {
         return;
       }
 
-      console.log("Mouse Enter Event");
-      // console.log("Feature");
+      // console.log("Mouse Enter Event");
+      // // console.log("Feature");
 
       let feature = {...features[0]};
       let summaryInfo = JSON.parse(feature.properties.summaryInfo);
@@ -191,12 +198,13 @@ const MapContainer = (props) => {
 
 
       summaryInfo.licenses = state.licenses.filter(license => license['District Name'] === features[0].properties.Name);
+      summaryInfo.tax_summary = state.tax_summary.find(tax => tax['District Name'] === features[0].properties.Name);
 
-      console.log(summaryInfo);
+      // console.log(summaryInfo);
 
       setState({
         ...state,
-        popupInfo:{ ...summaryInfo,  },
+        popupInfo:{ ...summaryInfo  },
         // activeDistrict:,
         buildingInfo:null,
         cursor:'pointer'
@@ -221,19 +229,19 @@ const MapContainer = (props) => {
   // map click event
   const handleMapClick = (evt) => {
     // query districts data
-    console.log(evt.features);
+    // console.log(evt.features);
 
     let { features } = evt
     
     if(features[0] && features[0].layer.id === 'districts-data') {
-      console.log("Click Event");
+      // console.log("Click Event");
       updateDistrictBuilding(features[0].properties.Name);
 
       // // 
       // if(state.activeDistrict === features[0].properties.Name) {
         
       // } else {
-      //   console.log("District Info: ", state.activeDistrict);
+      //   // console.log("District Info: ", state.activeDistrict);
       //   con
        
       // }     
@@ -258,13 +266,13 @@ const MapContainer = (props) => {
   }
 
   const updateDistrictBuilding = (district) => {
-    console.log(state);
+    // console.log(state);
 
     let districts = JSON.parse(JSON.stringify(state.rental_data))
       .filter(building => building["District Name"] === district);
 
-    console.log(state.activeDistricts);
-    console.log("Updating District:", district);
+    // console.log(state.activeDistricts);
+    // console.log("Updating District:", district);
 
     setState({
       ...state,
@@ -285,7 +293,7 @@ const MapContainer = (props) => {
       return feature;
     });
 
-    // console.log(items);
+    // // console.log(items);
     return turf.featureCollection([...items]);
   }
 
@@ -299,11 +307,10 @@ const MapContainer = (props) => {
 
   // expired licenses
   let licensesGeo = getBuildingGeoJSON(expired_license);
-  console.log(expired_license);
+  // console.log(expired_license);
 
   // tax assessment
   let taxGeo = getBuildingGeoJSON(state.tax_assessment);
-
 
   return (
     <>
@@ -367,7 +374,35 @@ const MapContainer = (props) => {
                           <tr>
                             <td>{popupInfo['Total Unit']}</td>
                             <td>{popupInfo['Unit Available']}</td>
-                            <td>{popupInfo['Total Rent']}</td>
+                            <td>RM {formatValues(popupInfo['Total Rent'])}</td>
+                          </tr>
+                        {/* ))} */}
+                      </tbody>
+                    </table>
+
+                  </div>
+
+                  <div className='popup-body'>
+                    <div className='section-header'>Tax Summary Data</div>
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Total Assessment Case</th>
+                          <th>Total Overdue Case</th>
+                          <th>Current Overdue Amount</th>
+                          <th>Accumulated Overdue Amount</th>
+                          <th>Current Year Collection</th>
+                        </tr>
+                      </thead>
+
+                      <tbody>
+                        {/* {popupInfo.licenses.map(license => ( */}
+                          <tr>
+                            <td>{popupInfo.tax_summary['Total Assessment Case']}</td>
+                            <td>{popupInfo.tax_summary['Total Overdue Case']}</td>
+                            <td>RM {formatValues(popupInfo.tax_summary['Current Overdue Amount'])}</td>
+                            <td>RM {formatValues(popupInfo.tax_summary['Accumulated Overdue Amount'])}</td>
+                            <td>RM {formatValues(popupInfo.tax_summary['Current Year Collection'])}</td>
                           </tr>
                         {/* ))} */}
                       </tbody>
@@ -389,7 +424,7 @@ const MapContainer = (props) => {
                           <th>Expired</th>
                           <th>Revenue</th>
                         </tr>
-                        </thead>
+                      </thead>
 
                       <tbody>
                         {popupInfo.licenses.map(license => (
@@ -397,7 +432,7 @@ const MapContainer = (props) => {
                             <td>{license['License Type']}</td>
                             <td>{license['Total License Issued / Renewed']}</td>
                             <td>{license['Total License Expired']}</td>
-                            <td>{license['License Revenue']}</td>
+                            <td>RM {formatValues(license['License Revenue'])}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -477,7 +512,7 @@ const MapContainer = (props) => {
 }
 
 const Pins  = ({data, setMarkerPopupInfo, color, layer}) => {
-  console.log(data);
+  // console.log(data);
 
   return (
     data.features.map((entry, index) => (
@@ -534,7 +569,7 @@ const MarkerPopup = ({info, setMarkerPopupInfo}) => {
 }
 
 const UnitDetailSection = (props) => {
-  console.log(props);
+  // console.log(props);
   let units = props.info.filter(info => info.Name === props.buildingInfo.Name);
   return (
     <div className='units-section'>
@@ -552,8 +587,8 @@ const UnitDetailSection = (props) => {
 
 
             <tbody>
-              {units.map(unit => (
-                <tr key={unit['Unit Number']}>
+              {units.map((unit, i) => (
+                <tr key={`unit-${i}`}>
                     <td>{unit['Unit Number']}</td>
                     <td>{unit['Type']}</td>
                     <td>{unit['Monthly Rental']}</td>
@@ -569,7 +604,7 @@ const UnitDetailSection = (props) => {
 
 // For more information on data-driven styles, see https://www.mapbox.com/help/gl-dds-ref/
 export const dataLayer = (district) => {
-  // console.log(district);
+  // // console.log(district);
 
   return {
     id: "districts-data",
@@ -658,7 +693,7 @@ const taxStyle = () => {
 }
 
 function usePrevious(value) {
-  // console.log(value);
+  // // console.log(value);
   const ref = useRef();
 
   useEffect(() => {
@@ -666,6 +701,11 @@ function usePrevious(value) {
   });
 
   return ref.current;
+}
+
+
+function formatValues(value = 0) {
+  return value.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');  
 }
 
 export default MapContainer;

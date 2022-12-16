@@ -7,11 +7,14 @@ import SearchCard from './components/cards/SearchCard';
 import SearchResultCard from './components/cards/SearchResultsCard';
 import Dashboard from './components/dashboard/dashboard';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import TaskSection from './components/task/TaskSection';
 import SummarySection from './components/summary/summary';
 import SummaryToggler from './components/summary/summary-toggler';
 import ReportSection from './components/reports/reports';
+
+
+import {read, utils} from "xlsx";
 
 
 function App() {
@@ -19,8 +22,32 @@ function App() {
   const [ state, setState ] = useState({
     activeTab:'search', 
     summaryActive:false,
-    district:""
+    search_results:[],
+    district:"",
+    tax_assessment:null
   });
+
+  useEffect(() => {
+    if(!state.tax_assessment) {
+      loadData() 
+    }
+    
+  });
+
+  const loadData = () => {
+    fetch("/assets/data/Business License.xlsx")
+      .then(res => res.arrayBuffer())
+      .then(data => {
+        let businessWorkbook = read(data);
+
+        // utils.sheet_to_
+        setState({
+          ...state,
+          tax_assessment:utils.sheet_to_json(businessWorkbook.Sheets['Tax Assessment'])
+        });
+
+      })
+  }
 
   const toggleTab = (tab) => {
 
@@ -50,7 +77,34 @@ function App() {
 
   }
 
-  let { activeTab, summaryActive, district } = state;
+  const handleSearchChange = (val) => {
+    // filter the dataset
+    let value = val.toLowerCase();
+    let searchResults = state.tax_assessment.filter(entry => {
+      // console.log(entry);
+
+      if(
+        entry['Account Number'].toString().includes(value) || 
+        entry['Lot Number'].toString().includes(value) ||
+        entry['Reference Number'].toString().includes(value) ||
+        entry['IC Number'].toString().includes(value) ||
+        entry['Premise Owner Name'].toString().includes(value)
+      ) {
+        return entry;
+      }
+
+      return false;
+    });
+
+
+    setState({
+      ...state,
+      search_results:searchResults.slice(0, 6)
+    })
+
+  }
+
+  let { activeTab, summaryActive, district, search_results } = state;
   // console.log(district);
 
   return (
@@ -59,13 +113,14 @@ function App() {
         activeDistrict={district}
         selectDistrict={selectDistrict}
       />
-      <SearchCard />
+      <SearchCard handleSearchChange={handleSearchChange} />
 
       <SearchResultCard 
         toggleTab={toggleTab} 
+        entries={search_results}
       />
       
-      <Dashboard />
+      { activeTab === "task" && <Dashboard /> }
 
       <ToolKitCard  
         toggleTab={toggleTab} 
