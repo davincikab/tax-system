@@ -525,9 +525,51 @@ form .btn-submit {
 
 
 /* popup-content */
+.mapboxgl-popup.mapboxgl-popup-anchor-top {
+  /* background: #ffffffb1; */
+  padding: 0px;
+}
+
 .popup-content, .mapboxgl-popup-content{
-  width: 300px;
+  width: 380px;
   font-size: 13px; 
+}
+
+.mapboxgl-popup-content {
+  padding: 0px;
+  color:var(--white);
+  font-size: 14px;
+  background: #5b5b5be1 !important;
+  /* background: #ffffffb1; */
+}
+
+.mapboxgl-popup-tip {
+  /* border-color:#ffffffb1 !important; */
+}
+
+.mapboxgl-popup {
+  max-width: 380px !important;
+}
+
+.mapboxgl-popup-content .mapboxgl-popup-close-button {
+  font-size: 20px;
+  color: white;
+  border-radius: 50%;
+  border: 1px solid white;
+  margin: 0.25rem;
+}
+
+.section-header {
+  text-align: left;
+  margin:0.5rem 0 0.25rem;
+  background-color: #2B323B;
+  color:white;
+  padding:0.25rem;
+}
+
+table td, th {
+  text-align: left;
+  padding:0 0.25rem;
 }
 
 .popup-header {
@@ -545,6 +587,28 @@ form .btn-submit {
   margin-right: 0.5rem;
 }
 
+.units-section {
+  position:absolute;
+  top:200px;
+  left:20px;
+  z-index: 3;
+  height: 300px;
+  /* width: 200px; */
+  color:var(--white);
+  z-index: 3;
+  background-color:var(--actionBoardBackground);
+  box-shadow:0px  0px 0.25rem var(--sectionBackground);
+}
+
+.units-section .header-section {
+  font-size: 15px;
+  background-color: var(--sectionBackground);
+  padding:0.5rem;
+}
+
+.units-section .table {
+  padding:0.5rem;
+}
 
 /* report section */
 .report-summary {

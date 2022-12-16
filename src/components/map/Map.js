@@ -19,17 +19,36 @@ const MapContainer = (props) => {
     district_buildings:null,
     cursor:'auto',
     popupInfo:null,
-    buildingInfo:null
+    buildingInfo:null,
+    isUnitOpen:false,
+    tax_assessment:null,
+    licenses:null,
+    expired_license:null
   });
 
+  // const { activeDistrict } = props
+  const prevProp = usePrevious({ "district" : props.activeDistrict});
+
   useEffect(() => {
+    
     fitToFeatureBounds();
 
     if(!state.rental_data) {
       readRentalData();
     }
+
+    console.log(prevProp);
+    if(prevProp && prevProp.district !== props.activeDistrict) {
+      console.log("Props changed");
+        setState({
+          ...state,
+          buildingInfo:null,
+          popupInfo:null,
+          activeDistrict:props.activeDistrict,
+        })
+    }
     
-  }, [props.activeDistrict, state.activeDistrict]);
+  }, [props, state.activeDistrict]);
 
   // load rental data
   const readRentalData = () => {
@@ -45,24 +64,54 @@ const MapContainer = (props) => {
 
       geoData.features = geoData.features.map(ft => {
         let entry = rental_data.find(dt => dt['District Name'] === ft.properties.Name);
-
-        // if(entry) {
-        //   console.log(entry);
-        // }
-
-        ft.properties.summaryInfo = {...entry} || {};
+        ft.properties.summaryInfo = {...entry} || {'District Name':ft.properties.Name};
         
         return ft;
       });
 
-      setState({
-        ...state,
-        rental_data:JSON.parse(JSON.stringify(rental_data))
-      });
+      fetch("/assets/data/Business License.xlsx")
+      .then(res => res.arrayBuffer())
+      .then(data => {
+        let businessWorkbook = read(data);
+        let currentDistrict = "";
+
+        let licenses = utils.sheet_to_json(businessWorkbook.Sheets['License']).map(lic => {
+          if(lic['District Name']) {
+            currentDistrict = lic['District Name']
+          } else {
+            lic['District Name'] = currentDistrict;
+          }
+
+          return lic;
+        });
+
+        console.log(licenses);
+
+        // utils.sheet_to_
+        setState({
+          ...state,
+          tax_assessment:utils.sheet_to_json(businessWorkbook.Sheets['Tax Assessment']),
+          expired_license:utils.sheet_to_json(businessWorkbook.Sheets["ExpiredLicense Account Details "]),
+          licenses:[...licenses],
+          rental_data:JSON.parse(JSON.stringify(rental_data))
+        });
+
+      })
+
+      // setState({
+      //   ...state,
+      //   rental_data:JSON.parse(JSON.stringify(rental_data))
+      // });
 
     });
-
     
+  }
+
+  const toggleUnitSection = () => {
+    setState({
+      ...state,
+      isUnitOpen:true
+    })
   }
 
   // load map data
@@ -76,8 +125,10 @@ const MapContainer = (props) => {
     if(state.activeDistrict || props.activeDistrict) {
       let name = state.activeDistrict || props.activeDistrict;
 
-      let feature = geoData.features.find(ft => ft.properties.Name === name);
-      var bbox = turf.bbox(feature);
+      let feature = geoData.features.filter(ft => ft.properties.Name === name);
+      console.log(feature);
+      
+      var bbox = turf.bbox(turf.featureCollection([...feature]));
 
       // console.log(bbprops
       mapRef.current.fitBounds(bbox, { padding:100 });
@@ -93,7 +144,7 @@ const MapContainer = (props) => {
     setState({
       ...state,
       popupInfo:info,
-      // buildingInfo:info
+      buildingInfo:info
     });
 
 
@@ -110,13 +161,15 @@ const MapContainer = (props) => {
 
   // mouse events
   const onMouseEnter = (evt) => {
-    console.log("Mouse Enter Event");
     let {features, lngLat } = evt;
+    console.log(features);
 
     if(features[0] && features[0].layer.id === "districts-data") {
       if(state.activeDistrict === features[0].properties.Name) {
         return;
       }
+
+      console.log("Mouse Enter Event");
       // console.log("Feature");
 
       let feature = {...features[0]};
@@ -128,14 +181,19 @@ const MapContainer = (props) => {
       summaryInfo.latitude = coords[1];
       summaryInfo.longitude = coords[0]; 
 
-      // console.log(summaryInfo);
+
+      summaryInfo.licenses = state.licenses.filter(license => license['District Name'] === features[0].properties.Name);
+
+      console.log(summaryInfo);
 
       setState({
         ...state,
-        popupInfo:summaryInfo,
+        popupInfo:{ ...summaryInfo,  },
+        // activeDistrict:,
+        buildingInfo:null,
         cursor:'pointer'
       });
-      
+
     } else {
 
       // let props = features[0].properties;
@@ -172,49 +230,50 @@ const MapContainer = (props) => {
     let { features } = evt
     
     if(features[0] && features[0].layer.id === 'districts-data') {
-      // 
-      if(state.activeDistrict === features[0].properties.Name) {
+      console.log("Click Event");
+      updateDistrictBuilding(features[0].properties.Name);
+
+      // // 
+      // if(state.activeDistrict === features[0].properties.Name) {
         
-      } else {
-        console.log("District Info")
-        updateDistrictBuilding(features[0].properties.Name);
-      }     
+      // } else {
+      //   console.log("District Info: ", state.activeDistrict);
+      //   con
+       
+      // }     
       // props.selectDistrict(features[0].properties.Name);      
     } 
     
-    if(features[0] && features[0].layer.id === 'districts-buildings') {
-      console.log("Rendering District Popup");
-      
+    if(features[0] && features[0].layer.id === 'districts-buildings') {      
       let props = features[0].properties;
       let coords = Object.values(evt.lngLat);
 
       let info = {...props, latitude:coords[1], longitude:coords[0]}
-      console.log(info);
       
       setState({
         ...state,
         buildingInfo:{...info},
+        popupInfo:null,
         cursor:'pointer'
       });
 
-    }
-
-    // console.log(features);
+    };
 
   }
 
   const updateDistrictBuilding = (district) => {
-    let activeDistricts = state.rental_data.filter(building => building["District Name"] === district);
-    console.log(activeDistricts);
+    console.log(state);
 
-    // props.selectDistrict(district);
+    let districts = JSON.parse(JSON.stringify(state.rental_data))
+      .filter(building => building["District Name"] === district);
 
+    console.log(state.activeDistricts);
     console.log("Updating District:", district);
 
     setState({
       ...state,
       activeDistrict:district,
-      district_buildings:activeDistricts
+      district_buildings:districts
     });
 
   }
@@ -231,17 +290,24 @@ const MapContainer = (props) => {
     });
 
     // console.log(items);
-
     return turf.featureCollection([...items]);
   }
 
 
-  let { district_buildings, activeDistrict, cursor, popupInfo, buildingInfo } = state;
+  let { district_buildings, activeDistrict, cursor, popupInfo, buildingInfo, expired_license } = state;
   let building_json = getBuildingGeoJSON(district_buildings);
+
+
   let districtStyle = dataLayer(activeDistrict || props.activeDistrict);
   let layerIds = district_buildings ? ["districts-buildings", "districts-data"] : ['districts-data'];
 
-  console.log(buildingInfo);
+  // expired licenses
+  let licensesGeo = getBuildingGeoJSON(expired_license);
+  console.log(expired_license);
+
+  // tax assessment
+  let taxGeo = getBuildingGeoJSON(state.tax_assessment);
+
 
   return (
     <>
@@ -275,7 +341,7 @@ const MapContainer = (props) => {
             }
 
             {/* district summary info */}
-            {popupInfo && (
+            { popupInfo && (
               <Popup
                 anchor="top"
                 longitude={Number(popupInfo.longitude)}
@@ -290,20 +356,57 @@ const MapContainer = (props) => {
                   </div>
 
                   <div className='popup-body'>
-                    <div className='popup-item'>
-                      <div className='item-label'>Total Units</div>
-                      <div className='item-value'>{popupInfo['Total Unit']}</div>
+                    <div className='section-header'>Rental Data</div>
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Total Units</th>
+                          <th>Unit Available</th>
+                          <th>Total Rent</th>
+                        </tr>
+                      </thead>
+
+                      <tbody>
+                        {/* {popupInfo.licenses.map(license => ( */}
+                          <tr>
+                            <td>{popupInfo['Total Unit']}</td>
+                            <td>{popupInfo['Unit Available']}</td>
+                            <td>{popupInfo['Total Rent']}</td>
+                          </tr>
+                        {/* ))} */}
+                      </tbody>
+                    </table>
+
+                  </div>
+
+
+                  <div className='license-section'>
+                    <div className='section-header'>
+                      License Section
                     </div>
 
-                    <div className='popup-item'>
-                      <div className='item-label'>Unit Available</div>
-                      <div className='item-value'>{popupInfo['Unit Available']}</div>
-                    </div>
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Type</th>
+                          <th>Issued/Renewed</th>
+                          <th>Expired</th>
+                          <th>Revenue</th>
+                        </tr>
+                        </thead>
 
-                    <div className='popup-item'>
-                      <div className='item-label'>Total Rent</div>
-                      <div className='item-value'>{popupInfo['Total Rent']}</div>
-                    </div>
+                      <tbody>
+                        {popupInfo.licenses.map(license => (
+                          <tr key={license['No.']}>
+                            <td>{license['License Type']}</td>
+                            <td>{license['Total License Issued / Renewed']}</td>
+                            <td>{license['Total License Expired']}</td>
+                            <td>{license['License Revenue']}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                     
                   </div>
 
                 </div>
@@ -311,11 +414,13 @@ const MapContainer = (props) => {
             )}
 
             {/*  building-summary-info */}
-            {buildingInfo && (
+            { buildingInfo && (
               <Popup
                 anchor="top"
                 longitude={Number(buildingInfo.longitude)}
                 latitude={Number(buildingInfo.latitude)}
+                focusAfterOpen={false}
+                closeOnClick={false}
 
                 onClose={() => setPopupInfo(null)}
               >
@@ -326,39 +431,80 @@ const MapContainer = (props) => {
 
                   <div className='popup-body'>
                     <div className='popup-item'>
-                      <div className='item-label'>Unit Number</div>
-                      <div className='item-value'>{buildingInfo['Unit Number']}</div>
+                      <div className='item-label'>Total Units: </div>
+                      <div className='item-value'>{buildingInfo['Total Unit']}</div>
                     </div>
 
                     <div className='popup-item'>
-                      <div className='item-label'>Unit Available</div>
+                      <div className='item-label'>Units Available: </div>
                       <div className='item-value'>{buildingInfo['Unit Available']}</div>
                     </div>
 
                     <div className='popup-item'>
-                      <div className='item-label'>Total Rent</div>
+                      <div className='item-label'>Total Rent: </div>
                       <div className='item-value'>{buildingInfo['Total Rent']}</div>
                     </div>
-                  </div>
 
+                    {/* <button className='btn btn-group' onClick={toggleUnitSection}>More Info</button> */}
+                  </div>
                 </div>
+
               </Popup>
             )}
           
 
           {/* render the data relating to the given district */}
+          {
+            licensesGeo &&
+            <Source type="geojson" data={licensesGeo} id="licenses">
+                <Layer {...licenseStyle()} />
+            </Source>
+          }
+
+          {
+            taxGeo &&
+            <Source type="geojson" data={taxGeo} id="tax-assessment">
+                <Layer {...taxStyle()} />
+            </Source>
+          }
 
 
           <NavigationControl position='bottom-right'/>
+          {buildingInfo && <UnitDetailSection info={district_buildings} buildingInfo={buildingInfo} /> }
         </Map>
     </>
     )
 }
 
 const UnitDetailSection = (props) => {
+  console.log(props);
+  let units = props.info.filter(info => info.Name === props.buildingInfo.Name);
   return (
     <div className='units-section'>
+      <div className='header-section'>
+        Units within {props.buildingInfo.Name}
+      </div>
 
+        <table className='table'>
+            <tr>
+              <th>Unit Number</th>
+              <th>Type</th>
+              <th>Monthly Rental</th>
+              <th>District</th>
+            </tr>
+
+
+            <tbody>
+              {units.map(unit => (
+                <tr key={unit['Unit Number']}>
+                    <td>{unit['Unit Number']}</td>
+                    <td>{unit['Type']}</td>
+                    <td>{unit['Monthly Rental']}</td>
+                    <td>{unit['District Name']}</td>
+                </tr>
+              ))}
+            </tbody>
+        </table>
     </div>
   )
 }
@@ -420,6 +566,49 @@ const buildingStyle = () => {
       'circle-radius':7
     }
   }
+}
+
+const licenseStyle = () => {
+  return {
+    id: "licenses",
+    // type: 'fill',
+    source:'licenses',
+    type:'circle',
+    paint: {
+      'circle-color': 'blue',
+      'circle-opacity':  0.7,
+      'circle-stroke-color':'white',
+      'circle-stroke-width':0.5,
+      'circle-radius':5
+    }
+  }
+}
+
+const taxStyle = () => {
+  return {
+    id: "tax",
+    // type: 'fill',
+    source:'tax-assessment',
+    type:'circle',
+    paint: {
+      'circle-color': 'orange',
+      'circle-opacity':  0.7,
+      'circle-stroke-color':'white',
+      'circle-stroke-width':0.5,
+      'circle-radius':5
+    }
+  }
+}
+
+function usePrevious(value) {
+  // console.log(value);
+  const ref = useRef();
+
+  useEffect(() => {
+    ref.current = value;
+  });
+
+  return ref.current;
 }
 
 export default MapContainer;
