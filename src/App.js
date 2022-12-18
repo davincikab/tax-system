@@ -24,7 +24,9 @@ function App() {
     summaryActive:false,
     search_results:[],
     district:"",
-    tax_assessment:null
+    tax_assessment:null,
+    location:null,
+    activeEntry:null
   });
 
   useEffect(() => {
@@ -104,7 +106,23 @@ function App() {
 
   }
 
-  let { activeTab, summaryActive, district, search_results } = state;
+  const handleLocationClick = (location, entry) => {
+    console.log(location);
+
+    setState({
+      ...state,
+      location,
+      district:entry['District'],
+      activeEntry:entry
+    });
+
+  }
+
+  let { 
+    activeTab, summaryActive, district, 
+    search_results, location, activeEntry
+  } = state;
+
   // console.log(district);
 
   return (
@@ -112,15 +130,19 @@ function App() {
       <MapContainer 
         activeDistrict={district}
         selectDistrict={selectDistrict}
+        location={location}
+        activeEntry={activeEntry}
       />
+
       <SearchCard handleSearchChange={handleSearchChange} />
 
       <SearchResultCard 
         toggleTab={toggleTab} 
         entries={search_results}
+        handleLocationClick={handleLocationClick}
       />
       
-      { activeTab === "task" && <Dashboard /> }
+      { activeTab === "database" && <Dashboard /> }
 
       <ToolKitCard  
         toggleTab={toggleTab} 

@@ -191,6 +191,10 @@ div#map-container {
   margin:0.5rem 0;
 }
 
+.location-icon {
+  cursor: pointer;
+}
+
 .search-body .result-card {
   border-top: 1px solid var(--grey-blue);
   padding:0.5rem 0;

@@ -30,7 +30,10 @@ const MapContainer = (props) => {
   });
 
   // const { activeDistrict } = props
-  const prevProp = usePrevious({ "district" : props.activeDistrict});
+  const prevProp = usePrevious({ 
+    "district" : props.activeDistrict,
+    "location" : props.location
+  });
 
   useEffect(() => {
     
@@ -41,14 +44,23 @@ const MapContainer = (props) => {
     }
 
     // console.log(prevProp);
-    if(prevProp && prevProp.district !== props.activeDistrict) {
+    if(
+      (prevProp && prevProp.district !== props.activeDistrict) ||
+      (prevProp && prevProp.location !== props.location)
+    ) {
       // console.log("Props changed");
         setState({
           ...state,
           buildingInfo:null,
           popupInfo:null,
           activeDistrict:props.activeDistrict,
-        })
+        });
+
+        // mapRef.current.flyTo({ center:props.location, zoom:17 });
+    }
+
+    if(prevProp && prevProp.location !== props.location) {
+      mapRef.current.flyTo({ center:props.location, zoom:17 });
     }
     
   }, [props, state.activeDistrict]);
@@ -268,7 +280,7 @@ const MapContainer = (props) => {
   const updateDistrictBuilding = (district) => {
     // console.log(state);
 
-    let districts = JSON.parse(JSON.stringify(state.rental_data))
+    let districtsRentals = JSON.parse(JSON.stringify(state.rental_data))
       .filter(building => building["District Name"] === district);
 
     // console.log(state.activeDistricts);
@@ -277,13 +289,25 @@ const MapContainer = (props) => {
     setState({
       ...state,
       activeDistrict:district,
-      district_buildings:districts
+      district_buildings:districtsRentals
     });
 
   }
 
-  const getBuildingGeoJSON = (entries) => {
+  const getBuildingGeoJSON = (entries = null) => {
     if(!entries) return turf.featureCollection([]);
+
+    // filter the data = 
+    entries = entries.filter(item => {
+      if(
+        item['District'] === state.activeDistrict || 
+        item['District Name'] === state.activeDistrict
+      ) {
+        return item;
+      }
+
+      return false
+    });
 
     let items = entries.filter(item => item.Location).map(item => {
       let coords = item.Location.split(",").map(v => parseFloat(v)).reverse();
@@ -427,8 +451,8 @@ const MapContainer = (props) => {
                       </thead>
 
                       <tbody>
-                        {popupInfo.licenses.map(license => (
-                          <tr key={license['No.']}>
+                        {popupInfo.licenses.map((license, i) => (
+                          <tr key={`license-${i}`}>
                             <td>{license['License Type']}</td>
                             <td>{license['Total License Issued / Renewed']}</td>
                             <td>{license['Total License Expired']}</td>
@@ -578,24 +602,26 @@ const UnitDetailSection = (props) => {
       </div>
 
         <table className='table'>
+          <thead>
             <tr>
               <th>Unit Number</th>
               <th>Type</th>
               <th>Monthly Rental</th>
               <th>District</th>
             </tr>
+          </thead>
 
+          <tbody>
+            {units.map((unit, i) => (
+              <tr key={`unit-${i}`}>
+                  <td>{unit['Unit Number']}</td>
+                  <td>{unit['Type']}</td>
+                  <td>{unit['Monthly Rental']}</td>
+                  <td>{unit['District Name']}</td>
+              </tr>
+            ))}
+          </tbody>
 
-            <tbody>
-              {units.map((unit, i) => (
-                <tr key={`unit-${i}`}>
-                    <td>{unit['Unit Number']}</td>
-                    <td>{unit['Type']}</td>
-                    <td>{unit['Monthly Rental']}</td>
-                    <td>{unit['District Name']}</td>
-                </tr>
-              ))}
-            </tbody>
         </table>
     </div>
   )

@@ -1,6 +1,13 @@
 const SearchResultCard = (props) => {
     console.log(props.entries);
 
+    const handleLocationClick = (location, entry) => {
+        console.log(location);
+        let coords = location.split(",").map(coord => parseFloat(coord) );
+
+        props.handleLocationClick([...coords.reverse()], entry);
+    }
+
     return (
         <div className="search-result">
             <div className="search-header">
@@ -10,7 +17,11 @@ const SearchResultCard = (props) => {
             <div className="search-body">
                 {
                 props.entries.map((entry, i) => (
-                    <ResultCard key={`result-${i}`} entry={entry} />
+                    <ResultCard 
+                        key={`result-${i}`} 
+                        entry={entry} 
+                        handleLocationClick={handleLocationClick} 
+                    />
                 ))
                 }
             </div>
@@ -18,7 +29,7 @@ const SearchResultCard = (props) => {
     )   
 }
 
-const ResultCard = ({entry}) => {
+const ResultCard = ({entry, handleLocationClick}) => {
     return (
         <div className="result-card">
 
@@ -43,12 +54,13 @@ const ResultCard = ({entry}) => {
             <div className="item-info d-flex">
                 <div>
                     <div className="">Unit Address</div>
+
                     <div className="b">
                         Pulau Duyung Besar, 21200 Kuala Terangganu, Terangganu
                     </div>
                 </div>
 
-                <div>
+                <div onClick={() => handleLocationClick(entry.Location, entry)} className="location-icon">
                     <img src="/assets/icons/location.png" alt="location"/>
                 </div>
             </div>
