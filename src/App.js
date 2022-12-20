@@ -15,6 +15,7 @@ import ReportSection from './components/reports/reports';
 
 
 import {read, utils} from "xlsx";
+import LoginPage from './components/login';
 
 
 function App() {
@@ -26,6 +27,7 @@ function App() {
     district:"",
     tax_assessment:null,
     location:null,
+    isLoggedIn:false,
     activeEntry:null
   });
 
@@ -118,8 +120,16 @@ function App() {
 
   }
 
+  const handleLogin = () => {
+    setState({
+      ...state,
+      isLoggedIn:true
+    });
+
+  }
+
   let { 
-    activeTab, summaryActive, district, 
+    activeTab, summaryActive, district, isLoggedIn,
     search_results, location, activeEntry
   } = state;
 
@@ -127,35 +137,41 @@ function App() {
 
   return (
     <div className="App">
-      <MapContainer 
-        activeDistrict={district}
-        selectDistrict={selectDistrict}
-        location={location}
-        activeEntry={activeEntry}
-      />
+      {!isLoggedIn && <LoginPage handleLogin={handleLogin} /> }
 
-      <SearchCard handleSearchChange={handleSearchChange} />
+      { isLoggedIn &&
+        <>
+          <MapContainer 
+            activeDistrict={district}
+            selectDistrict={selectDistrict}
+            location={location}
+            activeEntry={activeEntry}
+          />
 
-      <SearchResultCard 
-        toggleTab={toggleTab} 
-        entries={search_results}
-        handleLocationClick={handleLocationClick}
-      />
-      
-      { activeTab === "database" && <Dashboard /> }
+          <SearchCard handleSearchChange={handleSearchChange} />
 
-      <ToolKitCard  
-        toggleTab={toggleTab} 
-        activeTab={state.activeTab}
-      />
+          <SearchResultCard 
+            toggleTab={toggleTab} 
+            entries={search_results}
+            handleLocationClick={handleLocationClick}
+          />
+          
+          { !search_results[0] && <Dashboard /> }
 
-      { activeTab === "task" && <TaskSection /> }
-      { summaryActive && <SummarySection toggleSummaryTab={toggleSummaryTab} selectDistrict={selectDistrict} /> }
+          <ToolKitCard  
+            toggleTab={toggleTab} 
+            activeTab={state.activeTab}
+          />
 
-      {activeTab === "settings" && <ReportSection />}
-      <SummaryToggler toggleSummaryTab={toggleSummaryTab}/>
+          { activeTab === "task" && <TaskSection /> }
+          { summaryActive && <SummarySection toggleSummaryTab={toggleSummaryTab} selectDistrict={selectDistrict} /> }
 
-      <Footer />
+          {activeTab === "settings" && <ReportSection />}
+          <SummaryToggler toggleSummaryTab={toggleSummaryTab}/>
+
+          <Footer />
+        </>
+      }
     </div>
   );
 

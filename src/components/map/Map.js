@@ -8,6 +8,7 @@ import Pin from './icon';
 import {read, utils} from "xlsx";
 
 import geoData from '../../assets/data/districts.json';
+import buildingData from '../../assets/data/buildings.json';
 
 const MAPBOX_TOKEN = 'pk.eyJ1IjoiZGF1ZGk5NyIsImEiOiJjanJtY3B1bjYwZ3F2NGFvOXZ1a29iMmp6In0.9ZdvuGInodgDk7cv-KlujA';
 
@@ -223,7 +224,10 @@ const MapContainer = (props) => {
       });
 
     } else {
-
+      setState({
+        ...state,
+        cursor:'pointer'
+      })
     }
 
     
@@ -241,28 +245,18 @@ const MapContainer = (props) => {
   // map click event
   const handleMapClick = (evt) => {
     // query districts data
-    // console.log(evt.features);
+    console.log(evt.features);
 
     let { features } = evt
+    let coords = Object.values(evt.lngLat);
     
     if(features[0] && features[0].layer.id === 'districts-data') {
       // console.log("Click Event");
-      updateDistrictBuilding(features[0].properties.Name);
-
-      // // 
-      // if(state.activeDistrict === features[0].properties.Name) {
-        
-      // } else {
-      //   // console.log("District Info: ", state.activeDistrict);
-      //   con
-       
-      // }     
-      // props.selectDistrict(features[0].properties.Name);      
+      updateDistrictBuilding(features[0].properties.Name); 
     } 
     
     if(features[0] && features[0].layer.id === 'districts-buildings') {      
       let props = features[0].properties;
-      let coords = Object.values(evt.lngLat);
 
       let info = {...props, latitude:coords[1], longitude:coords[0]}
       
@@ -274,6 +268,16 @@ const MapContainer = (props) => {
       });
 
     };
+
+    if(features[0] && features[0].layer.id === 'lot-data') {
+      let info = {...features[0], latitude:coords[1], longitude:coords[0]}
+
+      setState({
+        ...state,
+        markerPopupInfo:{...info, geometry : { coordinates : [...coords] } }
+      });
+
+    }
 
   }
 
@@ -327,7 +331,7 @@ const MapContainer = (props) => {
 
 
   let districtStyle = dataLayer(activeDistrict || props.activeDistrict);
-  let layerIds = district_buildings ? ["districts-buildings", "districts-data"] : ['districts-data'];
+  let layerIds = district_buildings ? ["districts-buildings", "districts-data", "lot-data"] : ['districts-data'];
 
   // expired licenses
   let licensesGeo = getBuildingGeoJSON(expired_license);
@@ -365,6 +369,13 @@ const MapContainer = (props) => {
               <Source type="geojson" data={building_json} id="districts-buildings">
                 <Layer {...buildingStyle()} />
             </Source>
+            }
+
+            {
+              activeDistrict &&
+              <Source type="geojson" data={buildingData} id="lot-data">
+                <Layer {...lotStyle()} />
+              </Source>
             }
 
             {/* district summary info */}
@@ -563,6 +574,8 @@ const MarkerPopup = ({info, setMarkerPopupInfo}) => {
   let coords = info.geometry.coordinates;
   
   const renderContent = (info) => {
+    console.log(info);
+
     let keys = Object.keys(info.properties).filter(key => ['Location', 'coords'].indexOf(key) === -1);
 
     return (
@@ -668,6 +681,30 @@ export const dataLayer = (district) => {
     }
 
   };
+}
+
+const lotStyle = () => {
+  return {
+    id: "lot-data",
+    type: 'fill',
+    source:'lot-data',
+    paint: {
+      'fill-color': {
+        property: 'Amount',
+        stops: [
+          [20, '#3288bd'],
+          [40, '#66c2a5'],
+          [60, '#abdda4'],
+          [80, '#e6f598'],
+          [100, '#ffffbf'],
+          [120, '#fee08b'],
+          [140, '#fdae61'],
+          [160, '#f46d43'],
+          [180, '#d53e4f']
+        ]
+      }
+    }
+  }
 }
 
 const buildingStyle = () => {

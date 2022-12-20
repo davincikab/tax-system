@@ -34,6 +34,78 @@ div#map-container {
   z-index: 0;
 }
 
+/* login page */
+.login-container {
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.login-container  > div {
+  flex: 1;
+}
+
+.login-container .login-section {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+ 
+}
+
+.login-container img {
+  width: 100%;
+  height: 100%;
+}
+
+.login-container .title {
+  font-size: 1.8rem;
+  margin: 0.5rem 0;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 80%;
+  margin:0 auto;
+  /* align-items: center; */
+}
+
+.login-form .form-group {
+  justify-content: flex-start;
+}
+
+.form-group label {
+  width: 120px;
+  text-align: left;
+}
+
+.login-form input.form-control {
+  border-radius: 5px;
+  height: 30px;
+  flex: 1;
+  border: 1px solid #444;
+  padding:0 0.5rem
+}
+
+.login-form input.form-control:focus {
+  outline: none;
+}
+
+.login-form .btn {
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  background-color: var(--actionBoardBackground2);
+}
+
+.login-form .btn img {
+  height: 40px;
+  width: 40px;
+  margin-left: 1rem;
+}
 /* search  */
 .search-card {
   position: absolute;
