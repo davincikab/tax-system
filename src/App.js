@@ -89,11 +89,11 @@ function App() {
       // console.log(entry);
 
       if(
-        entry['Account Number'].toString().includes(value) || 
-        entry['Lot Number'].toString().includes(value) ||
-        entry['Reference Number'].toString().includes(value) ||
-        entry['IC Number'].toString().includes(value) ||
-        entry['Premise Owner Name'].toString().includes(value)
+        entry['Account Number'].toString().toLowerCase().includes(value) || 
+        entry['Lot Number'].toString().toLowerCase().includes(value) ||
+        entry['Reference Number'].toString().toLowerCase().includes(value) ||
+        entry['IC Number'].toString().toLowerCase().includes(value) ||
+        entry['Premise Owner Name'].toString().toLowerCase().includes(value)
       ) {
         return entry;
       }
