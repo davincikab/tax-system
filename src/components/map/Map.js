@@ -689,21 +689,16 @@ const lotStyle = () => {
     type: 'fill',
     source:'lot-data',
     paint: {
-      'fill-color': {
-        property: 'Amount',
-        stops: [
-          [20, '#3288bd'],
-          [40, '#66c2a5'],
-          [60, '#abdda4'],
-          [80, '#e6f598'],
-          [100, '#ffffbf'],
-          [120, '#fee08b'],
-          [140, '#fdae61'],
-          [160, '#f46d43'],
-          [180, '#d53e4f']
+      'fill-color': [
+          'match',
+          ['get', 'Status'],
+          'Paid',
+          '#81CCA4',
+          'Unpaid',
+          '#ff6961',
+          '#F88D51',
         ]
       }
-    }
   }
 }
 

@@ -16,6 +16,7 @@ import ReportSection from './components/reports/reports';
 
 import {read, utils} from "xlsx";
 import LoginPage from './components/login';
+import CollectionManagementSection from './components/reports/collection_management';
 
 
 function App() {
@@ -166,7 +167,11 @@ function App() {
           { activeTab === "task" && <TaskSection /> }
           { summaryActive && <SummarySection toggleSummaryTab={toggleSummaryTab} selectDistrict={selectDistrict} /> }
 
-          {activeTab === "settings" && <ReportSection />}
+          {activeTab === "settings" && <>
+            <ReportSection /> 
+            <CollectionManagementSection />
+            </>
+          }
           <SummaryToggler toggleSummaryTab={toggleSummaryTab}/>
 
           <Footer />
