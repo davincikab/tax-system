@@ -391,9 +391,6 @@ const MapContainer = (props) => {
 
   // tax assessment
   let taxGeo = getBuildingGeoJSON(state.tax_assessment);
-
-  console.log(visibility);
-
   return (
     <>
         <Map
@@ -612,7 +609,7 @@ const MapContainer = (props) => {
 }
 
 const Pins  = ({data, setMarkerPopupInfo, color, layer, visible, status=null}) => {
-  console.log(status);
+  // console.log(status);
 
   if(!visible) {
     return <></>
@@ -938,6 +935,10 @@ const FilterDataSection = (props) => {
 export const dataLayer = (district) => {
   // // console.log(district);
 
+  // 30 ~ 60 = red
+  // 61 ~ 75 = yellow
+  // 76 ~ 100 = green
+
   return {
     id: "districts-data",
     type: 'fill',
@@ -950,17 +951,17 @@ export const dataLayer = (district) => {
     ],
     paint: {
       'fill-color': {
-        property: 'id',
+        property: 'Status',
         stops: [
-          [5, '#3288bd'],
-          [10, '#66c2a5'],
-          [15, '#abdda4'],
-          [20, '#e6f598'],
-          [25, '#ffffbf'],
-          [30, '#fee08b'],
-          [35, '#fdae61'],
-          [40, '#f46d43'],
-          [45, '#d53e4f']
+          [30, '#FF6961'],
+          [60, '#f9f943'],
+          [75, '#81CCA4'],
+          // [20, '#e6f598'],
+          // [25, '#ffffbf'],
+          // [30, '#fee08b'],
+          // [35, '#fdae61'],
+          // [40, '#f46d43'],
+          // [45, '#d53e4f']
         ]
       },
       'fill-opacity': [
@@ -978,7 +979,7 @@ export const dataLayer = (district) => {
 
 const lotStyle = (district, isVisible, status) => {
   let visibility = isVisible ? 'visible' : 'none';
-  console.log("Visibility: ", isVisible);
+  // console.log("Visibility: ", isVisible);
 
   let opacity = 0.9;
   if(status.Paid && status.Unpaid) {
