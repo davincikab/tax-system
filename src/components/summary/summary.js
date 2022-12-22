@@ -7,6 +7,13 @@ const SummarySection = (props) => {
     let uniqueNames = districts.features.map(district => district.properties.Name);
     uniqueNames = [...new Set(uniqueNames)];
 
+    let values = uniqueNames.map(name => {
+        let feature = districts.features.find(district => district.properties.Name === name);
+        // if(feature) {
+            return feature.properties.Status;
+        // }
+    });
+
     // let values = [];
 
     return (
@@ -25,10 +32,11 @@ const SummarySection = (props) => {
             </div>
 
             <div className="summary-body">
-                {uniqueNames.map(name => (
+                {uniqueNames.map((name, i) => (
                     <SummaryCard 
                         key={name} 
                         district={name} 
+                        status={values[i]}
                         handleCardClick={props.selectDistrict} 
                     />
                 )
@@ -44,10 +52,24 @@ const SummaryCard = (props) => {
         props.handleCardClick(district)
     }
 
-    let colors = ['#6ED256', '#CC6A6A', '#D2C456','#CC6A6A', '#D2C456'];
-    let index = Math.round(Math.random() * 5);
+    let color; 
 
-    let color = colors[index];
+    console.log(props.district);
+
+    if(props.status > 30 && props.status <= 60) {
+        color = "#FF6961";
+    } else if (props.status > 60 && props.status <= 75) {
+        color = "#f9f943";
+    } else if (props.status > 75) {
+        color = "#81CCA4";
+    } else {
+        color = "#FF6961";
+    }
+
+    // let colors = ['#6ED256', '#CC6A6A', '#D2C456','#CC6A6A', '#D2C456'];
+    // let index = Math.round(Math.random() * 5);
+
+    // let color = colors[index];
 
     return (
         <div className="summary-card" onClick={() => handleClick(props.district)}>

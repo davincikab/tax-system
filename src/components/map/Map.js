@@ -41,6 +41,10 @@ const MapContainer = (props) => {
     lot_status:{
       Paid:true,
       Unpaid:true
+    },
+    license_status:{
+      Paid:true,
+      Unpaid:true
     }
   });
 
@@ -375,7 +379,7 @@ const MapContainer = (props) => {
   let { 
     district_buildings, activeDistrict, cursor, popupInfo, 
     buildingInfo, expired_license, markerPopupInfo, visibility,
-    tax_status, lot_status
+    tax_status, lot_status, license_status
   } = state;
   let building_json = getBuildingGeoJSON(district_buildings);
 
@@ -385,12 +389,13 @@ const MapContainer = (props) => {
 
   // expired licenses
   let licensesGeo = getBuildingGeoJSON(expired_license);
-
   let buildingLotData = { ...buildingData };
+
   // buildingLotData.features = buildingLotData.features.filter(item => item.District === activeDistrict);
 
   // tax assessment
   let taxGeo = getBuildingGeoJSON(state.tax_assessment);
+
   return (
     <>
         <Map
@@ -576,6 +581,7 @@ const MapContainer = (props) => {
             <Pins 
               data={licensesGeo} 
               visible={visibility.expired_license} 
+              status={license_status}
               setMarkerPopupInfo={setMarkerPopupInfo} 
               color="orange" 
               layer="license"
@@ -741,6 +747,10 @@ const FilterDataSection = (props) => {
     lot_status:{
       Paid:true,
       Unpaid:true
+    },
+    license_status:{
+      Paid:true,
+      Unpaid:true
     }
   });
 
@@ -888,26 +898,52 @@ const FilterDataSection = (props) => {
               </div>
           </div>
 
-          <div className='form-group'>
-            <input 
-              type="checkbox" 
-              name="expired_license" 
-              id='expired_license' 
-              className='form-check' 
-              checked={state.expired_license}
-              onChange={handleChange}
-            />
+          <div className='toggle-section'>
+            <div className='form-group'>
+              <input 
+                type="checkbox" 
+                name="expired_license" 
+                id='expired_license' 
+                className='form-check' 
+                checked={state.expired_license}
+                onChange={handleChange}
+              />
 
-            <label htmlFor='expired_license'>Expired License</label>
+              <label htmlFor='expired_license'>Expired License</label>
+            </div>
+
+            <div className='toggle-body'>
+                <div className='form-group'>
+                  <input 
+                    type="checkbox" 
+                    name="license_status" 
+                    id='license_paid' 
+                    className='form-check' 
+                    checked={state.license_status.Paid}
+                    value="Paid"
+                    onChange={handleStatusChange}
+                  />
+
+                  <label htmlFor='license_paid'>Paid</label>
+                </div>
+
+                <div className='form-group'>
+                  <input 
+                    type="checkbox" 
+                    name="license_status" 
+                    id='license_unpaid' 
+                    className='form-check' 
+                    checked={state.license_status.Unpaid}
+                    value="Unpaid"
+                    onChange={handleStatusChange}
+                  />
+
+                  <label htmlFor='license_unpaid'>Unpaid</label>
+                </div>
+                
+              </div>
           </div>
 
-          {/* 1. Paid Tax Assessment
-          2. Unpaid Tax Assessment
-          3. Rental (On or Off)
-          4. Expired License
-          5. Paid License 
-          6. Lot (Paid)
-          7. Lot (Unpaid) */}
         </div>
 
         <div className='legend-section'>
@@ -924,6 +960,27 @@ const FilterDataSection = (props) => {
                 <div>Paid</div>
               </div>
           </div>
+
+          <div className='title'>Districts Status</div>
+
+          <div className='section-body'>
+              <div className='legend-item'>
+                <div className='legend-box' style={{backgroundColor:'#FF6961'}}></div>
+                <div>30 - 60</div>
+              </div>
+
+              <div className='legend-item'>
+                <div className='legend-box' style={{backgroundColor:'#f9f943'}}></div>
+                <div>61 - 75</div>
+              </div>
+
+              <div className='legend-item'>
+                <div className='legend-box' style={{backgroundColor:'#81CCA4'}}></div>
+                <div> 75 - 100</div>
+              </div>
+
+          </div>
+
         </div>
       </div>
     </div>
