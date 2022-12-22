@@ -678,11 +678,10 @@ tr td {
   position:absolute;
   top:200px;
   left:20px;
-  z-index: 3;
+  z-index: 4;
   height: 300px;
   /* width: 200px; */
   color:var(--white);
-  z-index: 3;
   background-color:var(--actionBoardBackground);
   box-shadow:0px  0px 0.25rem var(--sectionBackground);
 }
@@ -703,7 +702,7 @@ tr td {
   top:75px;
   left:0%;
   width:200px;
-  z-index: 4;
+  z-index: 3;
   margin:10px;
   background-color: var(--actionBoardBackground2);
   display: block;

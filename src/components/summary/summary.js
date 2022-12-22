@@ -66,11 +66,6 @@ const SummaryCard = (props) => {
         color = "#FF6961";
     }
 
-    // let colors = ['#6ED256', '#CC6A6A', '#D2C456','#CC6A6A', '#D2C456'];
-    // let index = Math.round(Math.random() * 5);
-
-    // let color = colors[index];
-
     return (
         <div className="summary-card" onClick={() => handleClick(props.district)}>
             <div className="text-card">
