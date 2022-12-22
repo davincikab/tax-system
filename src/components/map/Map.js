@@ -33,6 +33,14 @@ const MapContainer = (props) => {
       lot:true,
       rental:true,
       expired_license:true
+    },
+    tax_status:{
+      Paid:true,
+      Unpaid:true
+    },
+    lot_status:{
+      Paid:true,
+      Unpaid:true
     }
   });
 
@@ -307,6 +315,18 @@ const MapContainer = (props) => {
 
   }
 
+  const handleStatusChange = ({ name, value, checked }) => {
+    console.log(`${name} : ${value}, ${checked}`);
+
+    setState({
+      ...state,
+      [name]:{
+        ...state[name],
+        [value]:checked
+      }
+    });
+  }
+
   const updateDistrictBuilding = (district) => {
     // console.log(state);
 
@@ -354,7 +374,8 @@ const MapContainer = (props) => {
 
   let { 
     district_buildings, activeDistrict, cursor, popupInfo, 
-    buildingInfo, expired_license, markerPopupInfo, visibility
+    buildingInfo, expired_license, markerPopupInfo, visibility,
+    tax_status, lot_status
   } = state;
   let building_json = getBuildingGeoJSON(district_buildings);
 
@@ -407,7 +428,7 @@ const MapContainer = (props) => {
           {
             activeDistrict &&
             <Source type="geojson" data={buildingLotData} id="lot-data">
-              <Layer {...lotStyle(activeDistrict, visibility.lot)} />
+              <Layer {...lotStyle(activeDistrict, visibility.lot, lot_status)} />
             </Source>
           }
 
@@ -569,6 +590,7 @@ const MapContainer = (props) => {
             <Pins 
               data={taxGeo} 
               visible={visibility.tax} 
+              status={tax_status}
               setMarkerPopupInfo={setMarkerPopupInfo} 
               color="blue" 
               layer="tax"
@@ -583,17 +605,35 @@ const MapContainer = (props) => {
           <NavigationControl position='bottom-right'/>
           {buildingInfo && <UnitDetailSection info={district_buildings} buildingInfo={buildingInfo} /> }
 
-          <FilterDataSection toggleLayer={toggleLayer} />
+          <FilterDataSection toggleLayer={toggleLayer}  handleStatusChange={handleStatusChange}/>
         </Map>
     </>
     )
 }
 
-const Pins  = ({data, setMarkerPopupInfo, color, layer, visible}) => {
-  // console.log(data);
+const Pins  = ({data, setMarkerPopupInfo, color, layer, visible, status=null}) => {
+  console.log(status);
 
   if(!visible) {
     return <></>
+  }
+
+  if(status) {
+    // let vals = []
+    data.features = data.features.filter(entry => {
+      if(entry.properties.Status === 'Paid' && status.Paid) {
+        // console.log(entry);
+
+        return entry;
+      } else if(entry.properties.Status === 'Unpaid' && status.Unpaid) {
+        return entry;
+      } else {
+        return false;
+      }
+
+      
+    });
+
   }
 
   return (
@@ -696,8 +736,32 @@ const FilterDataSection = (props) => {
     tax:true,
     lot:true,
     rental:true,
-    expired_license:true
+    expired_license:true,
+    tax_status:{
+      Paid:true,
+      Unpaid:true
+    },
+    lot_status:{
+      Paid:true,
+      Unpaid:true
+    }
   });
+
+  const handleStatusChange = (evt) => {
+
+    let { name, value, checked } = evt.target;
+    console.log(`${name} : ${value}, ${checked}`);
+
+    props.handleStatusChange({name, value, checked});
+
+    setState({
+      ...state,
+      [name]:{
+        ...state[name],
+        [value]:checked
+      }
+    });
+  }
 
   const handleChange = (evt) => {
     evt.stopPropagation();
@@ -738,29 +802,29 @@ const FilterDataSection = (props) => {
               <div className='form-group'>
                 <input 
                   type="checkbox" 
-                  name="lot" 
-                  id='lot' 
+                  name="lot_status" 
+                  id='lot_paid' 
                   className='form-check' 
-                  checked={state.lot}
+                  checked={state.lot_status.Paid}
                   value="Paid"
-                  onChange={handleChange}
+                  onChange={handleStatusChange}
                 />
 
-                <label htmlFor='lot'>Paid</label>
+                <label htmlFor='lot_paid'>Paid</label>
               </div>
 
               <div className='form-group'>
                 <input 
                   type="checkbox" 
-                  name="lot" 
-                  id='lot' 
+                  name="lot_status" 
+                  id='lot_unpaid' 
                   className='form-check' 
-                  checked={state.lot}
-                  value="Paid"
-                  onChange={handleChange}
+                  checked={state.lot_status.Unpaid}
+                  value="Unpaid"
+                  onChange={handleStatusChange}
                 />
 
-                <label htmlFor='lot'>Unpaid</label>
+                <label htmlFor='lot_unpaid'>Unpaid</label>
               </div>
               
             </div>
@@ -799,29 +863,29 @@ const FilterDataSection = (props) => {
                 <div className='form-group'>
                   <input 
                     type="checkbox" 
-                    name="lot" 
-                    id='lot' 
+                    name="tax_status" 
+                    id='tax_paid' 
                     className='form-check' 
-                    checked={state.lot}
+                    checked={state.tax_status.Paid}
                     value="Paid"
-                    onChange={handleChange}
+                    onChange={handleStatusChange}
                   />
 
-                  <label htmlFor='lot'>Paid</label>
+                  <label htmlFor='tax_paid'>Paid</label>
                 </div>
 
                 <div className='form-group'>
                   <input 
                     type="checkbox" 
-                    name="lot" 
-                    id='lot' 
+                    name="tax_status" 
+                    id='tax_unpaid' 
                     className='form-check' 
-                    checked={state.lot}
-                    value="Paid"
-                    onChange={handleChange}
+                    checked={state.tax_status.Unpaid}
+                    value="Unpaid"
+                    onChange={handleStatusChange}
                   />
 
-                  <label htmlFor='lot'>Unpaid</label>
+                  <label htmlFor='tax_unpaid'>Unpaid</label>
                 </div>
                 
               </div>
@@ -912,9 +976,34 @@ export const dataLayer = (district) => {
   };
 }
 
-const lotStyle = (district, isVisible) => {
+const lotStyle = (district, isVisible, status) => {
   let visibility = isVisible ? 'visible' : 'none';
   console.log("Visibility: ", isVisible);
+
+  let opacity = 0.9;
+  if(status.Paid && status.Unpaid) {
+    opacity = 0.9;
+  } else if (status.Paid) {
+    opacity = [
+      'match',
+      ['get', 'Status'],
+      'Paid',
+      0.9,
+      0
+    ];
+
+  } else if (status.Unpaid) {
+    opacity = [
+      'match',
+      ['get', 'Status'],
+      'Unpaid',
+      0.9,
+      0
+    ];
+
+  } else {
+    opacity = 0;
+  }
 
   return {
     id: "lot-data",
@@ -928,6 +1017,7 @@ const lotStyle = (district, isVisible) => {
       false
     ],
     paint: {
+      'fill-opacity':opacity,
       'fill-color': [
           'match',
           ['get', 'Status'],
