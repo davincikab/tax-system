@@ -697,7 +697,103 @@ tr td {
   padding:0.5rem;
 }
 
-/* report section */
+/* layer toggler */
+.layer-toggler-section {
+  position:absolute;
+  top:75px;
+  left:0%;
+  width:200px;
+  z-index: 4;
+  margin:10px;
+  background-color: var(--actionBoardBackground2);
+  display: block;
+  box-shadow: 0px 0px 0.25rem var(--sectionBackground);
+  padding:1rem;
+  color:var(--white)
+}
+
+.layer-toggler-section .title {
+  font-size: 14px;
+  text-align: left;
+}
+
+.form-group {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  font-size: 13px;
+}
+
+.form-group .form-check {
+  height: 15px;
+  width: 15px;
+  margin: 0 0.5rem;
+  cursor: pointer;
+  accent-color: var(--sectionBackground);
+}
+
+.toggle-body {
+  padding:0 1rem;
+}
+
+.legend-section {
+  margin-top: 0.5rem;
+  border-top: 1px solid var(--actionBoardBackground);
+  padding:0.25rem 0;
+}
+
+.legend-item {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  margin-bottom: 0.25rem;
+}
+
+.legend-item .legend-box {
+  width: 30px;
+  height: 15px;
+  margin-right: 0.5rem;
+}
+/* report filter */
+.report-filter {
+  position:absolute;
+  top:75px;
+  left:0%;
+  width:200px;
+  z-index: 4;
+  margin:10px;
+  background-color: var(--actionBoardBackground2);
+  display: block;
+  box-shadow: 0px 0px 0.25rem var(--sectionBackground);
+  padding:1rem;
+
+  color:var(--white)
+}
+
+.filter-body {
+  text-align: left;
+  padding: 0.5rem 1rem;
+}
+
+.filter-section .text-card {
+  height: 40px;
+}
+
+.filter-section .text-card .color-div {
+  background-color: var(--blue);
+}
+
+.filter-body .filter-item {
+  /* margin:0.25rem; */
+  padding:0.25rem;
+  cursor: pointer;
+}
+
+.filter-body .filter-item:hover {
+  background-color: var(--sectionBackground);
+}
+
+/* report summary */
 .report-summary {
   position:absolute;
   top:130px;
@@ -795,6 +891,7 @@ tr td {
 
 .text-card {
   margin-right: 1rem;
+  background-color: var(--sectionBackground);
 }
 
 .card-text {

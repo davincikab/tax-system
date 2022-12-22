@@ -1,11 +1,17 @@
+import * as turf from '@turf/turf';
+
+
 const SearchResultCard = (props) => {
     console.log(props.entries);
 
     const handleLocationClick = (location, entry) => {
         console.log(location);
-        let coords = location.split(",").map(coord => parseFloat(coord) );
+        // let coords = location.split(",").map(coord => parseFloat(coord) );
 
-        props.handleLocationClick([...coords.reverse()], entry);
+        let coords = entry.Location.split(",").map(v => parseFloat(v)).reverse();
+        let feature = turf.point([...coords], { ...entry, coords } );
+
+        props.handleLocationClick([...coords], feature);
     }
 
     return (

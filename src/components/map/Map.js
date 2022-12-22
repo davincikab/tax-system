@@ -27,7 +27,13 @@ const MapContainer = (props) => {
     markerPopupInfo:null,
     licenses:null,
     tax_summary:null,
-    expired_license:null
+    expired_license:null,
+    visibility:{
+      tax:true,
+      lot:true,
+      rental:true,
+      expired_license:true
+    }
   });
 
   // const { activeDistrict } = props
@@ -49,20 +55,26 @@ const MapContainer = (props) => {
       (prevProp && prevProp.district !== props.activeDistrict) ||
       (prevProp && prevProp.location !== props.location)
     ) {
-      // console.log("Props changed");
+      console.log("Props changed");
+      console.log(props);
+        let districtObj = state.activeDistrict === props.activeDistrict ? {} : { activeDistrict:props.activeDistrict };
+
         setState({
           ...state,
           buildingInfo:null,
           popupInfo:null,
-          activeDistrict:props.activeDistrict,
+          markerPopupInfo:props.activeEntry ? {...props.activeEntry} : null,
+          ...districtObj
         });
+
+        if(prevProp && prevProp.location !== props.location) {
+          mapRef.current.flyTo({ center:props.location, zoom:17 });          
+        }
 
         // mapRef.current.flyTo({ center:props.location, zoom:17 });
     }
 
-    if(prevProp && prevProp.location !== props.location) {
-      mapRef.current.flyTo({ center:props.location, zoom:17 });
-    }
+    
     
   }, [props, state.activeDistrict]);
 
@@ -153,9 +165,9 @@ const MapContainer = (props) => {
       var bbox = turf.bbox(turf.featureCollection([...feature]));
 
       // // console.log(bbprops
+      console.log("Fit Map Bounds");
+
       mapRef.current.fitBounds(bbox, { padding:100 });
-      // // console.log(mapRef.current);
-      // mapRef.current.setPaintProperty("districts-data", "fill-opacity", 0.2);
 
     }
 
@@ -263,6 +275,7 @@ const MapContainer = (props) => {
       setState({
         ...state,
         buildingInfo:{...info},
+        markerPopupInfo:null,
         popupInfo:null,
         cursor:'pointer'
       });
@@ -278,6 +291,19 @@ const MapContainer = (props) => {
       });
 
     }
+
+  }
+
+  const toggleLayer = (name, value) => {
+    console.log(`${name} : ${value} `);
+
+    setState({
+      ...state,
+      visibility:{
+        ...state.visibility,
+        [name]:value
+      }
+    });
 
   }
 
@@ -326,7 +352,10 @@ const MapContainer = (props) => {
   }
 
 
-  let { district_buildings, activeDistrict, cursor, popupInfo, buildingInfo, expired_license, markerPopupInfo } = state;
+  let { 
+    district_buildings, activeDistrict, cursor, popupInfo, 
+    buildingInfo, expired_license, markerPopupInfo, visibility
+  } = state;
   let building_json = getBuildingGeoJSON(district_buildings);
 
 
@@ -335,10 +364,14 @@ const MapContainer = (props) => {
 
   // expired licenses
   let licensesGeo = getBuildingGeoJSON(expired_license);
-  // console.log(expired_license);
+
+  let buildingLotData = { ...buildingData };
+  // buildingLotData.features = buildingLotData.features.filter(item => item.District === activeDistrict);
 
   // tax assessment
   let taxGeo = getBuildingGeoJSON(state.tax_assessment);
+
+  console.log(visibility);
 
   return (
     <>
@@ -364,19 +397,19 @@ const MapContainer = (props) => {
               <Layer {...districtStyle} />
           </Source>
 
-            {
-              district_buildings &&
-              <Source type="geojson" data={building_json} id="districts-buildings">
-                <Layer {...buildingStyle()} />
+          {
+            district_buildings &&
+            <Source type="geojson" data={building_json} id="districts-buildings">
+              <Layer {...buildingStyle(visibility.rental)} />
             </Source>
-            }
+          }
 
-            {
-              activeDistrict &&
-              <Source type="geojson" data={buildingData} id="lot-data">
-                <Layer {...lotStyle()} />
-              </Source>
-            }
+          {
+            activeDistrict &&
+            <Source type="geojson" data={buildingLotData} id="lot-data">
+              <Layer {...lotStyle(activeDistrict, visibility.lot)} />
+            </Source>
+          }
 
             {/* district summary info */}
             { popupInfo && (
@@ -521,17 +554,25 @@ const MapContainer = (props) => {
 
           {/* render the data relating to the given district */}
           {
-            (activeDistrict && licensesGeo) && <Pins data={licensesGeo} setMarkerPopupInfo={setMarkerPopupInfo} color="orange" layer="license"/>
-            // <Source type="geojson" data={licensesGeo} id="licenses">
-            //     <Layer {...licenseStyle()} />
-            // </Source>
+            (activeDistrict && licensesGeo) && 
+            <Pins 
+              data={licensesGeo} 
+              visible={visibility.expired_license} 
+              setMarkerPopupInfo={setMarkerPopupInfo} 
+              color="orange" 
+              layer="license"
+            />
           }
 
-          {
-            (activeDistrict && taxGeo) && <Pins data={taxGeo} setMarkerPopupInfo={setMarkerPopupInfo} color="blue" layer="tax"/>
-            // <Source type="geojson" data={taxGeo} id="tax-assessment">
-            //     <Layer {...taxStyle()} />
-            // </Source>
+          { //Paid and unpaid
+            (activeDistrict && taxGeo) && 
+            <Pins 
+              data={taxGeo} 
+              visible={visibility.tax} 
+              setMarkerPopupInfo={setMarkerPopupInfo} 
+              color="blue" 
+              layer="tax"
+            />
           }
 
           {
@@ -541,13 +582,19 @@ const MapContainer = (props) => {
 
           <NavigationControl position='bottom-right'/>
           {buildingInfo && <UnitDetailSection info={district_buildings} buildingInfo={buildingInfo} /> }
+
+          <FilterDataSection toggleLayer={toggleLayer} />
         </Map>
     </>
     )
 }
 
-const Pins  = ({data, setMarkerPopupInfo, color, layer}) => {
+const Pins  = ({data, setMarkerPopupInfo, color, layer, visible}) => {
   // console.log(data);
+
+  if(!visible) {
+    return <></>
+  }
 
   return (
     data.features.map((entry, index) => (
@@ -572,6 +619,8 @@ const Pins  = ({data, setMarkerPopupInfo, color, layer}) => {
 
 const MarkerPopup = ({info, setMarkerPopupInfo}) => {
   let coords = info.geometry.coordinates;
+
+  console.log(info);
   
   const renderContent = (info) => {
     console.log(info);
@@ -641,6 +690,186 @@ const UnitDetailSection = (props) => {
 }
 
 
+const FilterDataSection = (props) => {
+
+  const [state, setState ] = useState({
+    tax:true,
+    lot:true,
+    rental:true,
+    expired_license:true
+  });
+
+  const handleChange = (evt) => {
+    evt.stopPropagation();
+
+    let {name, checked } = evt.target;
+    props.toggleLayer(name, checked);
+
+    setState({
+      ...state,
+      [name]:checked
+    });
+
+  }
+
+  return (
+    <div className='layer-toggler-section'>
+      <div className="title">
+        Map Layers
+      </div>
+
+      <div id="layers">
+        <div className='layer-toggler'>
+          <div className='toggle-section'>
+            <div className='form-group'>
+              <input 
+                type="checkbox" 
+                name="lot" 
+                id='lot' 
+                className='form-check' 
+                checked={state.lot}
+                onChange={handleChange}
+              />
+
+              <label htmlFor='lot' >Lot</label>
+            </div>
+
+            <div className='toggle-body'>
+              <div className='form-group'>
+                <input 
+                  type="checkbox" 
+                  name="lot" 
+                  id='lot' 
+                  className='form-check' 
+                  checked={state.lot}
+                  value="Paid"
+                  onChange={handleChange}
+                />
+
+                <label htmlFor='lot'>Paid</label>
+              </div>
+
+              <div className='form-group'>
+                <input 
+                  type="checkbox" 
+                  name="lot" 
+                  id='lot' 
+                  className='form-check' 
+                  checked={state.lot}
+                  value="Paid"
+                  onChange={handleChange}
+                />
+
+                <label htmlFor='lot'>Unpaid</label>
+              </div>
+              
+            </div>
+          </div>
+        
+
+          <div className='form-group'>
+            <input 
+              type="checkbox" 
+              name="rental" 
+              id='rental' 
+              className='form-check' 
+              checked={state.rental}
+              onChange={handleChange}
+            />
+
+            <label htmlFor='rental'>Rental Data</label>
+          </div>
+
+          <div className='toggle-section'>
+
+            <div className='form-group'>
+              <input 
+                type="checkbox" 
+                name="tax" 
+                id='tax' 
+                className='form-check' 
+                checked={state.tax} 
+                onChange={handleChange}
+              />
+
+              <label htmlFor='tax'>Tax Assessment</label>
+            </div>
+
+            <div className='toggle-body'>
+                <div className='form-group'>
+                  <input 
+                    type="checkbox" 
+                    name="lot" 
+                    id='lot' 
+                    className='form-check' 
+                    checked={state.lot}
+                    value="Paid"
+                    onChange={handleChange}
+                  />
+
+                  <label htmlFor='lot'>Paid</label>
+                </div>
+
+                <div className='form-group'>
+                  <input 
+                    type="checkbox" 
+                    name="lot" 
+                    id='lot' 
+                    className='form-check' 
+                    checked={state.lot}
+                    value="Paid"
+                    onChange={handleChange}
+                  />
+
+                  <label htmlFor='lot'>Unpaid</label>
+                </div>
+                
+              </div>
+          </div>
+
+          <div className='form-group'>
+            <input 
+              type="checkbox" 
+              name="expired_license" 
+              id='expired_license' 
+              className='form-check' 
+              checked={state.expired_license}
+              onChange={handleChange}
+            />
+
+            <label htmlFor='expired_license'>Expired License</label>
+          </div>
+
+          {/* 1. Paid Tax Assessment
+          2. Unpaid Tax Assessment
+          3. Rental (On or Off)
+          4. Expired License
+          5. Paid License 
+          6. Lot (Paid)
+          7. Lot (Unpaid) */}
+        </div>
+
+        <div className='legend-section'>
+          <div className='title'>Status</div>
+
+          <div className='section-body'>
+              <div className='legend-item'>
+                <div className='legend-box' style={{backgroundColor:'#FF6961'}}></div>
+                <div>Unpaid</div>
+              </div>
+
+              <div className='legend-item'>
+                <div className='legend-box' style={{backgroundColor:'#81CCA4'}}></div>
+                <div>Paid</div>
+              </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+
 // For more information on data-driven styles, see https://www.mapbox.com/help/gl-dds-ref/
 export const dataLayer = (district) => {
   // // console.log(district);
@@ -683,11 +912,21 @@ export const dataLayer = (district) => {
   };
 }
 
-const lotStyle = () => {
+const lotStyle = (district, isVisible) => {
+  let visibility = isVisible ? 'visible' : 'none';
+  console.log("Visibility: ", isVisible);
+
   return {
     id: "lot-data",
     type: 'fill',
     source:'lot-data',
+    filter:[
+      'match',
+      ['get', 'District'],
+      `${district}`, 
+      true,
+      false
+    ],
     paint: {
       'fill-color': [
           'match',
@@ -698,11 +937,16 @@ const lotStyle = () => {
           '#ff6961',
           '#F88D51',
         ]
-      }
+    },
+    layout:{
+      'visibility':`${visibility}`
+    }
   }
 }
 
-const buildingStyle = () => {
+const buildingStyle = (isVisible) => {
+  let visibility = isVisible ? 'visible' : 'none';
+
   return {
     id: "districts-buildings",
     // type: 'fill',
@@ -714,7 +958,11 @@ const buildingStyle = () => {
       'circle-stroke-color':'white',
       'circle-stroke-width':1,
       'circle-radius':7
+    },
+    layout:{
+      'visibility':`${visibility}`
     }
+
   }
 }
 

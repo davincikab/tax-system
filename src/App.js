@@ -8,15 +8,18 @@ import SearchResultCard from './components/cards/SearchResultsCard';
 import Dashboard from './components/dashboard/dashboard';
 
 import { useEffect, useState } from 'react';
+
+import LoginPage from './components/login';
+
 import TaskSection from './components/task/TaskSection';
 import SummarySection from './components/summary/summary';
 import SummaryToggler from './components/summary/summary-toggler';
-import ReportSection from './components/reports/reports';
 
+import ReportSection from './components/reports/reports';
+import CollectionManagementSection from './components/reports/collection_management';
+import ReportFilterSection from './components/reports/report-filters';
 
 import {read, utils} from "xlsx";
-import LoginPage from './components/login';
-import CollectionManagementSection from './components/reports/collection_management';
 
 
 function App() {
@@ -104,7 +107,9 @@ function App() {
 
     setState({
       ...state,
-      search_results:searchResults.slice(0, 6)
+      activeEntry:null,
+      location:null,
+      search_results:value ? searchResults.slice(0, 6) : []
     })
 
   }
@@ -115,7 +120,7 @@ function App() {
     setState({
       ...state,
       location,
-      district:entry['District'],
+      district:entry.properties['District'],
       activeEntry:entry
     });
 
@@ -134,7 +139,7 @@ function App() {
     search_results, location, activeEntry
   } = state;
 
-  // console.log(district);
+  // console.log(activeEntry);
 
   return (
     <div className="App">
@@ -168,8 +173,9 @@ function App() {
           { summaryActive && <SummarySection toggleSummaryTab={toggleSummaryTab} selectDistrict={selectDistrict} /> }
 
           {activeTab === "settings" && <>
-            <ReportSection /> 
-            <CollectionManagementSection />
+              <ReportFilterSection />
+              <ReportSection /> 
+              <CollectionManagementSection />
             </>
           }
           <SummaryToggler toggleSummaryTab={toggleSummaryTab}/>
