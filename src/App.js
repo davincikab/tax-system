@@ -144,6 +144,10 @@ function App() {
 
   }
 
+  const toggleCustomReport = () => {
+
+  }
+
   const handleLogin = () => {
     setState({
       ...state,
@@ -197,10 +201,17 @@ function App() {
             </>
           }
 
-          <CustomReport 
-            district={state.activeDistrict}
-            data={state.graphData}
-          />
+          {
+            activeTab === "settings" &&
+            <CustomReport 
+             district={state.activeDistrict}
+             data={state.graphData}
+             toggleCustomReport={toggleCustomReport}
+           />
+          }
+
+         
+
           <SummaryToggler toggleSummaryTab={toggleSummaryTab}/>
 
           <Footer />

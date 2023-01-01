@@ -5,7 +5,7 @@ import BarChart2 from "../graphs/BarChart2"
 import CustomBarChart from '../graphs/CustomBarChart';
 import HorizontalBar from "../graphs/HorizontalBarChart"
 
-const CustomReport = ({ district, data:{ tax, licenses, rental } }) => {
+const CustomReport = ({ district, data:{ tax, licenses, rental }, toggleCustomReport }) => {
     // get and aggregate(ditricts) the data
 
     let taxData = tax.filter(entry => entry['District Name'] === "Pulau-Pulau");
@@ -46,6 +46,10 @@ const CustomReport = ({ district, data:{ tax, licenses, rental } }) => {
                     </div>
                 </div>
 
+                <div className="close-btn" onClick={toggleCustomReport}>
+                    <img src="/assets/icons/cross.png" alt="close-btn" height={"20px"}/>
+                </div>
+
                 <div className="d-none export-options">
                     <div className="">
                         Export Options:
@@ -68,7 +72,7 @@ const CustomReport = ({ district, data:{ tax, licenses, rental } }) => {
                         Licenses Report
                     </div>
 
-                    <LicenseReport data={licenseData} />
+                    { licenseData[0] && <LicenseReport data={licenseData} /> }
 
                 </div>
 
@@ -172,7 +176,7 @@ const LicenseReport = ({data}) => {
 
 const RentalReport = ({rental}) => {
     // Total Unit	Unit Available	Total Rent
-    
+
     <div className='bar-graph-section d-flex'>
             <div className='bar-graph'>
                 {/* <CustomBarChart items={items['General License']} title="General License"/> */}
