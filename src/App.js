@@ -20,6 +20,7 @@ import CollectionManagementSection from './components/reports/collection_managem
 import ReportFilterSection from './components/reports/report-filters';
 
 import {read, utils} from "xlsx";
+import CustomReport from './components/reports/custom-report';
 
 
 function App() {
@@ -31,7 +32,12 @@ function App() {
     district:"",
     tax_assessment:null,
     location:null,
-    isLoggedIn:false,
+    isLoggedIn:true,
+    graphData:{
+      licenses:[],
+      rental:[],
+      tax:[]
+    },
     activeEntry:null
   });
 
@@ -49,9 +55,21 @@ function App() {
         let businessWorkbook = read(data);
 
         // utils.sheet_to_
-        setState({
-          ...state,
-          tax_assessment:utils.sheet_to_json(businessWorkbook.Sheets['Tax Assessment'])
+        fetch("/assets/data/Business License.xlsx")
+        .then(res => res.arrayBuffer())
+        .then(data => {
+          let rentalWorkbook = read(data);
+
+          setState({
+            ...state,
+            graphData:{
+              tax:utils.sheet_to_json(businessWorkbook.Sheets['Tax']),
+              licenses:utils.sheet_to_json(businessWorkbook.Sheets['License']),
+              rental:utils.sheet_to_json(rentalWorkbook.Sheets['Rent Place'])
+            },
+            tax_assessment:utils.sheet_to_json(businessWorkbook.Sheets['Tax Assessment'])
+          });
+
         });
 
       })
@@ -178,6 +196,11 @@ function App() {
               <CollectionManagementSection />
             </>
           }
+
+          <CustomReport 
+            district={state.activeDistrict}
+            data={state.graphData}
+          />
           <SummaryToggler toggleSummaryTab={toggleSummaryTab}/>
 
           <Footer />
