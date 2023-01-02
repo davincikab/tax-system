@@ -111,7 +111,7 @@ div#map-container {
   position: absolute;
   top:0px;
   margin-top: 25px;
-  left:28vw;
+  left:26vw;
   z-index: 2;
   
 
@@ -304,7 +304,7 @@ div#map-container {
   z-index: 3;
   margin:20px;
   background-color: var(--actionBoardBackground2);
-  width: 300px;
+  width: 320px;
   /* height: 60vh;
   max-height: 80vh; */
   font-size: 15px;
@@ -523,7 +523,7 @@ form .btn-submit {
 .summary-toggler {
   position:absolute;
   top:30px;
-  right:26%;
+  right:28%;
   background-color: #282c34;
   cursor: pointer;
 }
@@ -537,6 +537,20 @@ form .btn-submit {
   height: 68vh;
 
   background-color: var(--actionBoardBackground2);
+}
+
+.summary-body .card-text {
+  justify-content: flex-start !important;
+}
+
+
+.summary-body .card-text .field {
+  width: 135px;
+  text-align: left;
+}
+
+.summary-body .card-text span {
+  width: 40px;
 }
 
 .summary-header {
@@ -616,7 +630,7 @@ form .btn-submit {
   color:var(--white);
   font-size: 14px;
   background: #5b5b5be1 !important;
-  max-height: 65vh;
+  max-height: 50vh;
   overflow-y: auto;
   /* background: #ffffffb1; */
 }
@@ -627,7 +641,7 @@ form .btn-submit {
 
 .mapboxgl-popup {
   min-width: 250px;
-  max-width: 420px !important;
+  max-width: 450px !important;
 }
 
 .mapboxgl-popup-content .mapboxgl-popup-close-button {

@@ -77,19 +77,19 @@ const SummaryCard = (props) => {
 
             <div className="card-body">
                 <div className="card-text">
-                    <div>Uncollected Tax</div>
+                    <div className='field'>Uncollected Tax</div>
                     <span>:</span>
                     <div className='value'>{getRandomInt(1800, 3000)}</div>
                 </div>
 
                 <div className="card-text">
-                    <div>License Expired</div>
+                    <div className='field'>License Expired</div>
                     <span>:</span>
                     <div className='value'>{getRandomInt(100, 300)}</div>
                 </div>
 
                 <div className="card-text">
-                    <div>Space Rental Available</div>
+                    <div className='field'>Space Rental Available</div>
                     <span>:</span>
                     <div className='value'>{getRandomInt(10, 200)}</div>
                 </div>

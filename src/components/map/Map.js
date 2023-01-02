@@ -674,8 +674,8 @@ const MarkerPopup = ({info, setMarkerPopupInfo}) => {
       <div className=''>
           {keys.map((columnName, i) => (
             <div key={`column-${i}`} className="d-flex popup-item">
-              <div className='item-label'>{columnName}</div>
-              <div className='item-value'>{info.properties[columnName]}</div>
+              <div className='item-label'>{columnName}: </div>
+              <div className='item-value'>{columnName.includes("Amount") ? "RM  " + info.properties[columnName] : info.properties[columnName] }</div>
             </div>
           ))}
       </div>
