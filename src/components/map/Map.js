@@ -751,7 +751,8 @@ const FilterDataSection = (props) => {
     license_status:{
       Paid:true,
       Unpaid:true
-    }
+    },
+    isCollapsed:false
   });
 
   const handleStatusChange = (evt) => {
@@ -783,13 +784,20 @@ const FilterDataSection = (props) => {
 
   }
 
+  const handleCollapse = () => {
+    setState({
+      ...state,
+      isCollapsed:!state.isCollapsed
+    });
+  }
+
   return (
     <div className='layer-toggler-section'>
-      <div className="title">
+      <div className="title" onClick={handleCollapse}>
         Map Layers
       </div>
 
-      <div id="layers">
+      <div id="layers" style={{ height: state.isCollapsed ? "0px" : "380px" }}>
         <div className='layer-toggler'>
           <div className='toggle-section'>
             <div className='form-group'>

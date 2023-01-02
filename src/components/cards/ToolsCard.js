@@ -16,7 +16,7 @@ const ToolKitCard = (props) => {
             
             <div className="card-icon">
             <img src="/assets/icons/logo.png" alt="logo" />
-                <div>Activity Board</div>
+                <div>Action Board</div>
             </div>
 
             <div className="card-content">
@@ -44,7 +44,7 @@ const ToolKitCard = (props) => {
                 <div className={getClassName('settings')} onClick={() => setActiveTab('settings')}>
                     {/* <FaCog /> */}
                     <img src="/assets/icons/settings.png" alt='settings'/>
-                    <b>Settings</b>
+                    <b>reports</b>
                 </div>
 
             </div>

@@ -55,10 +55,12 @@ function App() {
         let businessWorkbook = read(data);
 
         // utils.sheet_to_
-        fetch("/assets/data/Business License.xlsx")
+        fetch("/assets/data/Rental Data.xlsx")
         .then(res => res.arrayBuffer())
-        .then(data => {
-          let rentalWorkbook = read(data);
+        .then(dataRes => {
+          let rentalWorkbook = read(dataRes);
+
+          console.log(rentalWorkbook);
 
           setState({
             ...state,
@@ -145,7 +147,10 @@ function App() {
   }
 
   const toggleCustomReport = () => {
-
+    setState({
+      ...state,
+      activeTab:state.activeTab === 'settings' ? 'search' : 'settings'
+    })
   }
 
   const handleLogin = () => {
@@ -162,6 +167,8 @@ function App() {
   } = state;
 
   // console.log(activeEntry);
+
+  // console.log(state.graphData);
 
   return (
     <div className="App">
@@ -194,12 +201,12 @@ function App() {
           { activeTab === "task" && <TaskSection /> }
           { summaryActive && <SummarySection toggleSummaryTab={toggleSummaryTab} selectDistrict={selectDistrict} /> }
 
-          {activeTab === "settings" && <>
+          {/* {activeTab === "settings" && <>
               <ReportFilterSection />
               <ReportSection /> 
               <CollectionManagementSection />
             </>
-          }
+          } */}
 
           {
             activeTab === "settings" &&
