@@ -824,6 +824,48 @@ tr td {
   border-radius: 2px;
 }
 
+.report-toggler {
+  position: absolute;
+  left:calc(-20vw);
+  width: 200px;
+  height: 200px;
+  margin-left: 10px;
+  background-color: var(--actionBoardBackground2);
+}
+
+.report-toggler .section-body {
+  padding: 0.5rem;
+}
+
+
+.report-toggler .toggler-item {
+  text-align: left;
+  margin:0.15rem 0;
+  font-size: 14px;
+  padding: 0.25rem;
+}
+
+.report-toggler .toggler-item.active {
+  background-color: var(--sectionBackground);
+}
+
+.report-toggler .toggler-item.active::after {
+  display: none;
+}
+
+.report-summary .card-text {
+  padding:0.25rem;
+}
+
+.card-text .form-control {
+  height: 25px;
+  margin-right: 1rem;
+}
+
+.report-toggler .title {
+  margin:0;
+}
+
 .report-summary .title-section {
   position: absolute;
   top:-40px;
@@ -875,8 +917,16 @@ tr td {
 .bar-graph-section {
   width: 100%;
   height: auto;
+  /* margin:0.5rem; */
 }
 
+.bar-graph-section > div {
+  margin:0.5rem;
+}
+
+.bar-graph-section .table-section {
+  margin-top: 1rem;
+}
 /* Footer Section */
 .footer-section {
   position: absolute;

@@ -1,14 +1,48 @@
 import  { FaFilePdf, FaFileExcel, FaFileWord, FaFilePowerpoint} from 'react-icons/fa';
+import { useEffect, useState } from 'react';
 
 import BarChart1 from "../graphs/BarChart1"
 import BarChart2 from "../graphs/BarChart2"
 import CustomBarChart from '../graphs/CustomBarChart';
-import HorizontalBar from "../graphs/HorizontalBarChart"
+import HorizontalBar from "../graphs/HorizontalBarChart";
 
-const CustomReport = ({ district, data:{ tax, licenses, rental }, toggleCustomReport }) => {
+let districtNames = [
+    "Bandar Kuala Terengganu",
+    "Atas Tol","Batu Buruk","Belara",
+    "Bukit Besar","Cabang Tiga","Cenering",
+    "Gelugur Kedai","Gelugur Raja","Kepung","Kuala Ibai",
+    "Kubang Parit","Losong","Manir","Paluh","Pengadang Buloh",
+    "Pulau-Pulau","Rengas","Serada","Tok Jamal"
+];
+
+const CustomReport = ({ data:{ tax, licenses, rental }, toggleCustomReport }) => {
+    const [ state, setState ] = useState({
+        activeReport:'License',
+        district:null
+    });
+
+    const handleReportToggle = (report) => { 
+        setState({
+            ...state,
+            activeReport:report
+        })
+    }
+
+    const handleDistrictChange = (e) => {
+        setState({
+            ...state,
+            district:e.target.value
+        })
+    }
+
+    const getClassName = (report) => {
+        return state.activeReport === report ? "toggler-item active" : "toggler-item";
+    }
     // get and aggregate(ditricts) the data
 
-    let taxData = district ? tax.filter(entry => entry['District Name'] === "Pulau-Pulau") : [...tax];
+    let { activeReport, district } = state;
+
+    let taxData = district !== "" ? tax.filter(entry => entry['District Name'] === district) : [...tax];
 
     let currentDistrict, currentRevenue = "";
     let licenseData = licenses.map(lic => {
@@ -26,17 +60,28 @@ const CustomReport = ({ district, data:{ tax, licenses, rental }, toggleCustomRe
         return lic;
     });
 
-    licenseData = district ? licenseData.filter(entry => entry['District Name'] === "Pulau-Pulau") : [...licenseData];
-    let rentalData = district ? rental.filter(entry => entry['District Name'] === "Pulau-Pulau") : [...rental];
-
+    licenseData = district ? licenseData.filter(entry => entry['District Name'] === district) : [...licenseData];
+    let rentalData = district ? rental.filter(entry => entry['District Name'] === district) : [...rental];
     console.log(rentalData);
+
+    
 
     return (
         <div className="report-summary">
+            <div className='report-toggler'>
+                <div className='title'> Report Types</div>
+
+                <div className='section-body'>
+                    <div className={getClassName("License")} onClick={() => handleReportToggle("License")}>License</div>
+                    <div className={getClassName("Tax Assessment")} onClick={() => handleReportToggle("Tax Assessment")}>Tax Assessment</div>
+                    <div className={getClassName("Rental")} onClick={() => handleReportToggle("Rental")}>Rental</div>
+                </div>
+            </div>
+
             <div className="title-section">
                 <div className="card-icon">
                 <img src="/assets/icons/logo.png" alt="logo" />
-                    <div>Custom Report</div>
+                    <div>{activeReport}  Report</div>
                 </div>
             </div>
 
@@ -44,7 +89,15 @@ const CustomReport = ({ district, data:{ tax, licenses, rental }, toggleCustomRe
                 <div className="text-card">
                     <div className="color-div"></div>
                     <div className="card-text">
-                        <div>Pulau-Pulau</div>
+                        <select className='form-control' id='district' onChange={handleDistrictChange}>
+                            <option value="">All Districts</option>
+
+                            {
+                                districtNames.map(name => <option key={name} value={name}>{name}</option>)
+                            }
+                        </select>
+
+                        <div>{district}</div>
                     </div>
                 </div>
 
@@ -67,37 +120,37 @@ const CustomReport = ({ district, data:{ tax, licenses, rental }, toggleCustomRe
             </div>
 
             <div className="reports-body">
-                <div className='d-flex report-summary-section'>
+                {activeReport === "License" && <div className='d-flex report-summary-section'>
                      {/* license types */}
 
-                    <div className='title'>
+                    {/* <div className='title'>
                         Licenses Report
-                    </div>
+                    </div> */}
 
                     { licenseData[0] && <LicenseReport data={licenseData} /> }
 
-                </div>
+                </div> }
 
-                <div className='d-flex report-summary-section'>
+                { activeReport === "Tax Assessment" && <div className='d-flex report-summary-section'>
                     {/* cases and amount (overdue) */}
-                    <div className='title'>
+                    {/* <div className='title'>
                         Tax Report
-                    </div>
+                    </div> */}
 
                     { taxData[0] && <TaxReport data={taxData}/> }
 
-                </div>  
+                </div>  }
 
                 
 
-                <div className="d-flex report-summary-section">
-                    <div className='title'>
+                { activeReport === "Rental" && <div className="d-flex report-summary-section">
+                    {/* <div className='title'>
                         Rental Units
-                    </div>
+                    </div> */}
 
                     { rentalData[0] && <RentalReport data={rentalData} /> }
 
-                </div>
+                </div> }
             </div>
 
         </div>
